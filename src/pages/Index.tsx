@@ -5,13 +5,13 @@ import BottomNav from '@/components/BottomNav';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
+    <div className="min-h-screen bg-background">
       <Header />
       <main>
         <HeroSection />
         <ProductGrid />
       </main>
-      <BottomNav />
+      {/* BottomNav removed as per request */}
     </div>
   );
 };

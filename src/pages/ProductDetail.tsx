@@ -66,7 +66,7 @@ const ProductDetail = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-full hover:bg-secondary transition-colors"
+              className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100 hover:shadow-[0_4px_15px_rgba(0,0,0,0.12)] transition-shadow"
             >
               <ArrowLeft className="w-5 h-5 text-foreground" />
             </motion.button>
@@ -75,12 +75,11 @@ const ProductDetail = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setLiked(!liked)}
-            className="p-2 rounded-full hover:bg-secondary transition-colors"
+            className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100 hover:shadow-[0_4px_15px_rgba(0,0,0,0.12)] transition-shadow"
           >
             <Heart
-              className={`w-5 h-5 transition-colors ${
-                liked ? 'fill-destructive text-destructive' : 'text-foreground'
-              }`}
+              className={`w-5 h-5 transition-colors ${liked ? 'fill-destructive text-destructive' : 'text-foreground'
+                }`}
             />
           </motion.button>
         </div>
@@ -130,11 +129,10 @@ const ProductDetail = () => {
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-4 h-4 ${
-                    i < Math.floor(product.rating!)
+                  className={`w-4 h-4 ${i < Math.floor(product.rating!)
                       ? 'fill-yellow-400 text-yellow-400'
                       : 'text-muted'
-                  }`}
+                    }`}
                 />
               ))}
             </div>
@@ -155,11 +153,10 @@ const ProductDetail = () => {
                   key={color}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setSelectedColor(color)}
-                  className={`w-8 h-8 rounded-full ${colorMap[color]} ${
-                    selectedColor === color
+                  className={`w-8 h-8 rounded-full ${colorMap[color]} ${selectedColor === color
                       ? 'ring-2 ring-primary ring-offset-2'
                       : ''
-                  }`}
+                    }`}
                 />
               ))}
             </div>
@@ -176,11 +173,10 @@ const ProductDetail = () => {
                   key={size}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedSize(size)}
-                  className={`min-w-[44px] h-11 px-4 rounded-xl font-medium transition-all ${
-                    selectedSize === size
+                  className={`min-w-[44px] h-11 px-4 rounded-xl font-medium transition-all ${selectedSize === size
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                  }`}
+                    }`}
                 >
                   {size}
                 </motion.button>
