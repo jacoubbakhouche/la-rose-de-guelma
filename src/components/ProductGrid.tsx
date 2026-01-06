@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/context/CartContext';
 
 const ProductGrid = () => {
-  const [activeCategory, setActiveCategory] = useState('men');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,9 +33,15 @@ const ProductGrid = () => {
   };
 
   const filteredProducts = products.filter(p => {
+    if (activeCategory === 'all') return true;
     if (activeCategory === 'sale') return (p.discount || 0) > 0;
-    if (activeCategory === 'new') return p.is_new; // Assuming 'is_new' column
-    return activeCategory === 'all' || p.category === activeCategory;
+    if (activeCategory === 'new') return p.is_new === true;
+
+    // Case-insensitive comparison and handle nulls
+    const productCategory = (p.category || '').toLowerCase().trim();
+    const targetCategory = activeCategory.toLowerCase().trim();
+
+    return productCategory === targetCategory;
   });
 
   return (
@@ -57,7 +63,7 @@ const ProductGrid = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product, index) => (
                 <ProductCard key={product.id} product={product} index={index} />

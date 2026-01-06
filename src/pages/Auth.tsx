@@ -21,11 +21,12 @@ export default function Auth() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
 
+  const navigate = useNavigate();
   const { user, signIn, signUp, role, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && user) {
-      if (role === 'admin') {
+      if (role === 'admin' || user.email === 'yakoubbakhouche011@gmail.com') {
         navigate('/admin/orders');
       } else {
         navigate('/');
@@ -75,7 +76,17 @@ export default function Auth() {
           }
         } else {
           toast.success('تم تسجيل الدخول بنجاح');
-          navigate('/');
+
+          // Immediate check for admin redirection
+          if (email === 'yakoubbakhouche011@gmail.com') {
+            window.location.href = '/admin/orders';
+            return;
+          }
+
+          // Force navigation to home for normal users, or let AuthContext handle it
+          setTimeout(() => {
+            navigate('/');
+          }, 100);
         }
       } else {
         const { error } = await signUp(email, password, fullName);

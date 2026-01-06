@@ -1,4 +1,4 @@
-import { Search, ShoppingBag, User, LogOut, Menu, Heart } from 'lucide-react';
+import { Search, ShoppingBag, User, LogOut, Menu, Heart, Package } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
@@ -21,7 +21,7 @@ import { toast } from 'sonner';
 
 const Header = () => {
   const { cartCount } = useCart();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -58,6 +58,14 @@ const Header = () => {
       )}
 
       <div className="space-y-2">
+        {isAdmin && (
+          <Link to="/admin/orders" className="flex items-center gap-4 p-4 hover:bg-purple-50 rounded-xl transition-colors group mb-2 border border-purple-100 bg-purple-50/50">
+            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+              <Package className="w-5 h-5 text-purple-600" />
+            </div>
+            <span className="font-bold text-purple-700">لوحة المشرف</span>
+          </Link>
+        )}
         <Link to="/favorites" className="flex items-center gap-4 p-4 hover:bg-secondary rounded-xl transition-colors group">
           <div className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center group-hover:bg-pink-100 transition-colors">
             <Heart className="w-5 h-5 text-pink-500" />
@@ -171,10 +179,18 @@ const Header = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem className="text-right flex-row-reverse gap-2">
+                  <DropdownMenuItem className="flex items-center gap-2 text-right flex-row-reverse">
                     <User className="w-4 h-4" />
                     <span className="truncate">{user.email}</span>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin/orders" className="flex items-center gap-2 w-full text-purple-600 font-bold flex-row-reverse justify-between">
+                        <span>لوحة المشرف</span>
+                        <Package className="w-4 h-4" />
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem
                     onClick={handleSignOut}
                     className="text-right flex-row-reverse gap-2 text-destructive focus:text-destructive"
@@ -194,7 +210,7 @@ const Header = () => {
           </div>
         </div>
       </div>
-    </header>
+    </header >
   );
 };
 

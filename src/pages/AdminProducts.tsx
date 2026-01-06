@@ -62,25 +62,40 @@ const AdminProducts = () => {
     });
 
     useEffect(() => {
+        console.log('AdminProducts: checking user state', { user, loading });
         if (!user) {
+            console.log('AdminProducts: no user, redirecting');
             navigate('/auth');
             return;
         }
+        console.log('AdminProducts: user found, fetching products');
         fetchProducts();
     }, [user]);
 
     const fetchProducts = async () => {
         try {
-            const { data, error } = await supabase
+            console.log('AdminProducts: starting fetch');
+
+            // Create a timeout promise to prevent hanging
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Connection timed out')), 5000)
+            );
+
+            // Fetch products
+            const fetchPromise = supabase
                 .from('products')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
-            setProducts(data || []);
+            const result = await Promise.race([fetchPromise, timeoutPromise]) as any;
+
+            if (result.error) throw result.error;
+
+            console.log('AdminProducts: fetch success', result.data?.length);
+            setProducts(result.data || []);
         } catch (error) {
             console.error('Error fetching products:', error);
-            toast.error('فشل في تحميل المنتجات');
+            toast.error('فشل في تحميل المنتجات (تأكد من إنشاء الجدول)');
         } finally {
             setLoading(false);
         }
@@ -223,15 +238,56 @@ const AdminProducts = () => {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label className="text-right">رابط الصورة (URL)</Label>
-                                <div className="relative">
-                                    <ImageIcon className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
-                                    <Input
-                                        value={newProduct.image}
-                                        onChange={e => setNewProduct({ ...newProduct, image: e.target.value })}
-                                        placeholder="https://..."
-                                        className="text-right pr-10"
-                                    />
+                                <Label className="text-right">صورة المنتج</Label>
+                                <div className="flex flex-col gap-4">
+                                    {newProduct.image && (
+                                        <div className="relative w-full h-48 rounded-xl overflow-hidden border border-gray-200">
+                                            <img src={newProduct.image} alt="Preview" className="w-full h-full object-cover" />
+                                            <button
+                                                onClick={() => setNewProduct({ ...newProduct, image: '' })}
+                                                className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    )}
+                                    <div className="relative">
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+
+                                                const toastId = toast.loading('جاري رفع الصورة...');
+                                                try {
+                                                    const fileExt = file.name.split('.').pop();
+                                                    const fileName = `${Math.random()}.${fileExt}`;
+                                                    const filePath = `${fileName}`;
+
+                                                    const { error: uploadError } = await supabase.storage
+                                                        .from('product-images')
+                                                        .upload(filePath, file);
+
+                                                    if (uploadError) throw uploadError;
+
+                                                    const { data } = supabase.storage
+                                                        .from('product-images')
+                                                        .getPublicUrl(filePath);
+
+                                                    setNewProduct({ ...newProduct, image: data.publicUrl });
+                                                    toast.success('تم رفع الصورة بنجاح', { id: toastId });
+                                                } catch (error) {
+                                                    console.error('Error uploading image:', error);
+                                                    toast.error('فشل رفع الصورة', { id: toastId });
+                                                }
+                                            }}
+                                            className="text-right pr-10 pt-2 h-14 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                        />
+                                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <ImageIcon className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -272,7 +328,27 @@ const AdminProducts = () => {
                 </Dialog>
 
                 {loading ? (
-                    <div className="text-center py-10 text-muted-foreground">جاري التحميل...</div>
+                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-4">
+                        <div className="animate-spin text-4xl">⏳</div>
+                        <p>جاري تحميل البيانات...</p>
+                        <div className="text-xs text-left p-4 bg-gray-100 rounded-lg font-mono text-gray-600 max-w-md overflow-auto" dir="ltr">
+                            <p><strong>Debug Info:</strong></p>
+                            <p>User Email: {user?.email || 'None'}</p>
+                            <p>User ID: {user?.id || 'None'}</p>
+                            <p>Loading State: true</p>
+                            <p>Supabase Status: Connecting...</p>
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                setLoading(false);
+                                toast.error('تم إلغاء التحميل يدوياً');
+                            }}
+                        >
+                            فرض إيقاف التحميل
+                        </Button>
+                    </div>
                 ) : products.length === 0 ? (
                     <div className="text-center py-20">
                         <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">

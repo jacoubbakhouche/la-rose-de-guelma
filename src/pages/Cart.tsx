@@ -67,7 +67,7 @@ const Cart = () => {
   const shippingPrice = selectedAddress ? getShippingPrice(selectedAddress.wilaya, deliveryType) : 0;
   const finalTotal = cartTotal + shippingPrice;
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!user) {
       toast.error('يرجى تسجيل الدخول أولاً');
       navigate('/auth');
@@ -79,10 +79,31 @@ const Cart = () => {
       return;
     }
 
-    // Here we would send the order to Supabase
-    toast.success(`تم الطلب! التوصيل إلى: ${deliveryType === 'home' ? 'المنزل' : 'المكتب'} (${shippingPrice} دج)`);
-    clearCart();
-    navigate('/');
+    // Construct Order Payload
+    const orderPayload = {
+      user_id: user.id,
+      full_name: selectedAddress.full_name,
+      phone: selectedAddress.phone,
+      address: `${selectedAddress.address_line1}, ${selectedAddress.commune}, ${selectedAddress.wilaya}`,
+      items: cartItems as any,
+      total_amount: finalTotal,
+      status: 'pending' // Default status
+    };
+
+    const toastId = toast.loading('جاري إرسال الطلب...');
+
+    try {
+      const { error } = await supabase.from('orders').insert(orderPayload);
+
+      if (error) throw error;
+
+      toast.success('تم استلام طلبك بنجاح!', { id: toastId });
+      clearCart();
+      navigate('/');
+    } catch (error) {
+      console.error('Error placing order:', error);
+      toast.error('فشل في إرسال الطلب. حاول مرة أخرى.', { id: toastId });
+    }
   };
 
   return (
@@ -262,8 +283,8 @@ const Cart = () => {
                   <button
                     onClick={() => setDeliveryType('home')}
                     className={`p-3 rounded-xl border flex flex-col items-center gap-1 transition-all ${deliveryType === 'home'
-                        ? 'border-primary bg-primary/5 text-primary'
-                        : 'border-border bg-card text-muted-foreground'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-border bg-card text-muted-foreground'
                       }`}
                   >
                     <span className="text-xs font-bold">توصيل للمنزل</span>
@@ -272,8 +293,8 @@ const Cart = () => {
                   <button
                     onClick={() => setDeliveryType('desk')}
                     className={`p-3 rounded-xl border flex flex-col items-center gap-1 transition-all ${deliveryType === 'desk'
-                        ? 'border-primary bg-primary/5 text-primary'
-                        : 'border-border bg-card text-muted-foreground'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-border bg-card text-muted-foreground'
                       }`}
                   >
                     <span className="text-xs font-bold">استلام من المكتب</span>

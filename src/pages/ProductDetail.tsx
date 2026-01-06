@@ -1,18 +1,63 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Heart, Star, ShoppingBag } from 'lucide-react';
-import { products } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  image: string;
+  discount?: number;
+  rating?: number;
+  reviews?: number;
+  colors?: string[];
+  sizes?: string[];
+  description?: string;
+}
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const product = products.find((p) => p.id === id);
   const { addToCart } = useCart();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState<string | undefined>();
   const [selectedColor, setSelectedColor] = useState<string | undefined>();
   const [liked, setLiked] = useState(false);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        setProduct(data);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin text-4xl">⏳</div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -130,8 +175,8 @@ const ProductDetail = () => {
                 <Star
                   key={i}
                   className={`w-4 h-4 ${i < Math.floor(product.rating!)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-muted'
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'text-muted'
                     }`}
                 />
               ))}
@@ -154,8 +199,8 @@ const ProductDetail = () => {
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setSelectedColor(color)}
                   className={`w-8 h-8 rounded-full ${colorMap[color]} ${selectedColor === color
-                      ? 'ring-2 ring-primary ring-offset-2'
-                      : ''
+                    ? 'ring-2 ring-primary ring-offset-2'
+                    : ''
                     }`}
                 />
               ))}
@@ -174,8 +219,8 @@ const ProductDetail = () => {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedSize(size)}
                   className={`min-w-[44px] h-11 px-4 rounded-xl font-medium transition-all ${selectedSize === size
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                     }`}
                 >
                   {size}

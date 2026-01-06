@@ -79,6 +79,7 @@ export const products: Product[] = [
 ];
 
 export const categories = [
+  { id: 'all', label: 'الكل', labelEn: 'All' },
   { id: 'men', label: 'رجال', labelEn: 'Men' },
   { id: 'women', label: 'نساء', labelEn: 'Women' },
   { id: 'kids', label: 'أطفال', labelEn: 'Kids' },

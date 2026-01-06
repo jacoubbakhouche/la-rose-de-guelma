@@ -23,16 +23,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Helper to fetch role
-    const fetchRole = async (userId: string) => {
+    const fetchRole = async (userId: string, email?: string) => {
+      // Short-circuit for hardcoded admin to prevent loading delay
+      if (email === 'yakoubbakhouche011@gmail.com') {
+        console.log('⚡ Skipping DB fetch for hardcoded admin');
+        setRole('admin');
+        return;
+      }
+
+      console.log('🔍 Fetching role for user:', userId);
       try {
-        const { data } = await supabase
+        // Create a timeout promise to prevent hanging
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Fetch role timed out')), 4000)
+        );
+
+        const fetchPromise = supabase
           .from('profiles')
           .select('role')
           .eq('user_id', userId)
           .single();
+
+        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
+
+        if (error) {
+          console.error('❌ Error fetching role from DB:', error);
+        } else {
+          console.log('✅ Role data received:', data);
+        }
+
         setRole(data?.role ?? null);
       } catch (error) {
-        console.error('Error fetching role:', error);
+        console.error('❌ Unexpected error fetching role:', error);
         setRole(null);
       }
     };
@@ -43,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          await fetchRole(session.user.id);
+          await fetchRole(session.user.id, session.user.email);
         } else {
           setRole(null);
         }
@@ -56,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        await fetchRole(session.user.id);
+        await fetchRole(session.user.id, session.user.email);
       } else {
         setRole(null);
       }
@@ -94,10 +116,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      console.log("Initiating sign out...");
+
+      // Create a timeout promise that rejects after 2 seconds
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Sign out timed out')), 2000)
+      );
+
+      // Race between actual sign out and timeout
+      await Promise.race([
+        supabase.auth.signOut(),
+        timeoutPromise
+      ]);
+
+      console.log("Supabase sign out complete.");
     } catch (error) {
-      console.error("Error signing out:", error);
+      console.error("Error during sign out:", error);
     } finally {
+      console.log("Cleaning up local session...");
       // Nuking the session from storage to prevent auto-recovery
       Object.keys(localStorage).forEach((key) => {
         if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
@@ -110,11 +146,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
 
       // Force a hard reload to clear any persistent memory state
+      console.log("Reloading page...");
       window.location.replace('/');
     }
   };
 
-  const isAdmin = role === 'admin';
+  const isAdmin = role === 'admin' || user?.email === 'yakoubbakhouche011@gmail.com';
 
   return (
     <AuthContext.Provider value={{ user, session, loading, isAdmin, role, signUp, signIn, signOut }}>

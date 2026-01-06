@@ -47,7 +47,7 @@ const AdminLayout = () => {
                                 "flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group relative overflow-hidden",
                                 isActive
                                     ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-200 transform scale-105"
-                                    : "bg-white text-gray-600 hover:shadow-lg hover:-translate-y-1 hover:bg-gray-50"
+                                    : "bg-transparent text-gray-600 hover:bg-white/60 hover:shadow-sm hover:-translate-y-0.5"
                             )}
                         >
                             <Icon className={cn("w-6 h-6 transition-transform group-hover:scale-110", isActive ? "text-white" : "text-gray-400 group-hover:text-purple-600")} />
@@ -68,7 +68,7 @@ const AdminLayout = () => {
                     <span>تسجيل الخروج</span>
                 </Button>
             </div>
-        </div>
+        </div >
     );
 
     return (
@@ -107,7 +107,7 @@ const AdminLayout = () => {
                                     "flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group relative overflow-hidden",
                                     isActive
                                         ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-200 transform scale-105"
-                                        : "bg-white text-gray-600 hover:shadow-lg hover:-translate-y-1 hover:bg-gray-50"
+                                        : "bg-transparent text-gray-600 hover:bg-white/60 hover:shadow-sm hover:-translate-y-0.5"
                                 )}
                             >
                                 <Icon className={cn("w-6 h-6 transition-transform group-hover:scale-110", isActive ? "text-white" : "text-gray-400 group-hover:text-purple-600")} />

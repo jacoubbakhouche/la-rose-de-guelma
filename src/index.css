@@ -61,10 +61,13 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
   }
 
   html {
     scroll-behavior: smooth;
+    -webkit-touch-callout: none; /* iOS: disable callout */
+    user-select: none; /* Disable text selection for app-like feel */
   }
 
   body {

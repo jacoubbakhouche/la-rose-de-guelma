@@ -8,8 +8,8 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, index }: ProductCardProps) => {
-  const discountedPrice = product.discount 
-    ? product.price * (1 - product.discount / 100) 
+  const discountedPrice = product.discount
+    ? product.price * (1 - product.discount / 100)
     : product.price;
 
   return (
@@ -19,7 +19,7 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
       transition={{ delay: index * 0.1 }}
     >
       <Link to={`/product/${product.id}`}>
-        <motion.div 
+        <motion.div
           whileHover={{ y: -5 }}
           className="group relative bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-elevated transition-all duration-300"
         >
@@ -30,12 +30,11 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
             </div>
           )}
 
-          {/* Image */}
-          <div className="relative aspect-square bg-gradient-to-br from-secondary to-muted p-4">
+          <div className="relative aspect-[3/4] bg-gray-50">
             <img
               src={product.image}
               alt={product.name}
-              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           </div>
 
