@@ -5,6 +5,11 @@ import { ArrowLeft, Heart, Star, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Product {
   id: string;
@@ -12,6 +17,7 @@ interface Product {
   price: number;
   category: string;
   image: string;
+  images?: string[]; // Multiple images
   discount?: number;
   rating?: number;
   reviews?: number;
@@ -24,6 +30,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
+  const [activeImage, setActiveImage] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState<string | undefined>();
   const [selectedColor, setSelectedColor] = useState<string | undefined>();
@@ -41,6 +48,7 @@ const ProductDetail = () => {
 
         if (error) throw error;
         setProduct(data);
+        setActiveImage(data.image); // Initialize with main image
       } catch (error) {
         console.error('Error fetching product:', error);
       } finally {
@@ -51,25 +59,22 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin text-4xl">⏳</div>
-      </div>
-    );
-  }
-
-  if (!product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">المنتج غير موجود</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin text-4xl">⏳</div></div>;
+  if (!product) return <div className="min-h-screen flex text-center justify-center p-10"><p>المنتج غير موجود</p></div>;
 
   const discountedPrice = product.discount
     ? product.price * (1 - product.discount / 100)
     : product.price;
+
+  // Combine main image with extra images array for gallery
+  const allImages = product.images && product.images.length > 0
+    ? product.images
+    : [product.image];
+
+  // Ensure main image is first if not already
+  if (!allImages.includes(product.image)) {
+    allImages.unshift(product.image);
+  }
 
   const handleAddToCart = () => {
     if (product.sizes && !selectedSize) {
@@ -130,20 +135,54 @@ const ProductDetail = () => {
         </div>
       </header>
 
-      {/* Product Image */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="relative bg-gradient-to-br from-secondary to-muted aspect-square"
-      >
-        <motion.img
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-contain p-8"
-        />
-      </motion.div>
+      {/* Product Image & Gallery */}
+      <div className="bg-gray-50 pb-6 rounded-b-[2rem] shadow-sm">
+        <Dialog>
+          <DialogTrigger asChild>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="relative bg-white aspect-[3/4] md:aspect-square cursor-zoom-in overflow-hidden mx-auto max-w-md md:rounded-2xl md:mt-4 md:shadow-md"
+            >
+              <motion.img
+                key={activeImage} // Re-animate on change
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                src={activeImage}
+                alt={product.name}
+                className="w-full h-full object-cover object-top"
+              />
+              <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs backdrop-blur-md">
+                اضغط للتكبير 🔍
+              </div>
+            </motion.div>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl w-full h-[90vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
+            <div className="relative w-full h-full flex items-center justify-center p-4">
+              <img
+                src={activeImage}
+                alt={product.name}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Thumbnail Strip */}
+        {allImages.length > 1 && (
+          <div className="flex gap-3 overflow-x-auto px-4 mt-4 pb-2 snap-x">
+            {allImages.map((img, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveImage(img)}
+                className={`relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all snap-center ${activeImage === img ? 'border-primary ring-2 ring-primary/20' : 'border-transparent opacity-70'}`}
+              >
+                <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Product Info */}
       <motion.div
@@ -193,17 +232,24 @@ const ProductDetail = () => {
           <div className="space-y-3">
             <span className="text-sm font-medium text-foreground">اللون</span>
             <div className="flex gap-3">
-              {product.colors.map((color) => (
-                <motion.button
-                  key={color}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setSelectedColor(color)}
-                  className={`w-8 h-8 rounded-full ${colorMap[color]} ${selectedColor === color
-                    ? 'ring-2 ring-primary ring-offset-2'
-                    : ''
-                    }`}
-                />
-              ))}
+              {product.colors.map((color) => {
+                const isHex = color.startsWith('#');
+                const bgClass = isHex ? '' : (colorMap[color] || 'bg-gray-200');
+
+                return (
+                  <motion.button
+                    key={color}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setSelectedColor(color)}
+                    className={`w-8 h-8 rounded-full ${bgClass} ${selectedColor === color
+                      ? 'ring-2 ring-primary ring-offset-2'
+                      : ''
+                      }`}
+                    style={isHex ? { backgroundColor: color } : {}}
+                    title={color}
+                  />
+                );
+              })}
             </div>
           </div>
         )}

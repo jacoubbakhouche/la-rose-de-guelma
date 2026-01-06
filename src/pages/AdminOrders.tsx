@@ -41,23 +41,19 @@ const AdminOrders = () => {
 
     const fetchOrders = async () => {
         try {
-            // Create a timeout promise to prevent hanging
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Connection timed out')), 5000)
-            );
-
-            const fetchPromise = supabase
+            setLoading(true);
+            const { data, error } = await supabase
                 .from('orders')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            const result = await Promise.race([fetchPromise, timeoutPromise]) as any;
+            if (error) throw error;
 
-            if (result.error) throw result.error;
-            setOrders(result.data || []);
-        } catch (error) {
+            console.log('Orders fetched:', data?.length);
+            setOrders(data || []);
+        } catch (error: any) {
             console.error('Error fetching orders:', error);
-            toast.error('فشل تحميل الطلبات (تأكد من جدول orders)');
+            toast.error('فشل في تحميل الطلبات: ' + (error.message || 'خطأ غير معروف'));
         } finally {
             setLoading(false);
         }

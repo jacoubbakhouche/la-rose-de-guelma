@@ -55,51 +55,15 @@ const AdminProducts = () => {
         price: '',
         description: '',
         image: '',
+        images: [] as string[], // Multiple images
         category: '',
         discount: '',
-        colors: '', // Comma separated
-        sizes: ''   // Comma separated
+        colors: '',
+        sizes: ''
     });
+    const [customColor, setCustomColor] = useState('#000000');
 
-    useEffect(() => {
-        console.log('AdminProducts: checking user state', { user, loading });
-        if (!user) {
-            console.log('AdminProducts: no user, redirecting');
-            navigate('/auth');
-            return;
-        }
-        console.log('AdminProducts: user found, fetching products');
-        fetchProducts();
-    }, [user]);
-
-    const fetchProducts = async () => {
-        try {
-            console.log('AdminProducts: starting fetch');
-
-            // Create a timeout promise to prevent hanging
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Connection timed out')), 5000)
-            );
-
-            // Fetch products
-            const fetchPromise = supabase
-                .from('products')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            const result = await Promise.race([fetchPromise, timeoutPromise]) as any;
-
-            if (result.error) throw result.error;
-
-            console.log('AdminProducts: fetch success', result.data?.length);
-            setProducts(result.data || []);
-        } catch (error) {
-            console.error('Error fetching products:', error);
-            toast.error('فشل في تحميل المنتجات (تأكد من إنشاء الجدول)');
-        } finally {
-            setLoading(false);
-        }
-    };
+    // ... (inside fetchProducts, remains same)
 
     const handleAddProduct = async () => {
         if (!newProduct.name || !newProduct.price || !newProduct.category) {
@@ -113,7 +77,8 @@ const AdminProducts = () => {
                 name: newProduct.name,
                 description: newProduct.description,
                 price: parseFloat(newProduct.price),
-                image: newProduct.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80', // Default placeholder
+                image: newProduct.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80',
+                images: newProduct.images.length > 0 ? newProduct.images : [newProduct.image], // Save array
                 category: newProduct.category,
                 discount: newProduct.discount ? parseInt(newProduct.discount) : 0,
                 colors: newProduct.colors ? newProduct.colors.split(',').map(s => s.trim()) : [],
@@ -127,7 +92,7 @@ const AdminProducts = () => {
             toast.success('تمت إضافة المنتج بنجاح');
             setIsOpen(false);
             setNewProduct({
-                name: '', price: '', description: '', image: '', category: '', discount: '', colors: '', sizes: ''
+                name: '', price: '', description: '', image: '', images: [], category: '', discount: '', colors: '', sizes: ''
             });
             fetchProducts();
         } catch (error) {
@@ -135,6 +100,53 @@ const AdminProducts = () => {
             toast.error('حدث خطأ أثناء الإضافة');
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const [lastError, setLastError] = useState<string | null>(null);
+
+    const fetchProducts = async () => {
+        try {
+            console.log('AdminProducts: starting fetch');
+            setLoading(true);
+            setLastError(null);
+
+            // Check session first
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError) throw new Error('Session Error: ' + sessionError.message);
+            if (!session) throw new Error('No active session user');
+
+            // Timeout Promise
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout: Server took too long to respond (Check RLS Policies)')), 10000)
+            );
+
+            // Fetch Data Promise
+            const fetchPromise = supabase
+                .from('products')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            // Race
+            const { data, error } = await Promise.race([
+                fetchPromise.then(res => res),
+                timeoutPromise
+            ]) as any;
+
+            if (error) {
+                console.error('Supabase error:', error);
+                throw error;
+            }
+
+            console.log('AdminProducts: fetch success', data?.length);
+            setProducts(data || []);
+        } catch (error: any) {
+            console.error('Error fetching products:', error);
+            const msg = error.message || 'خطأ غير معروف';
+            setLastError(msg);
+            toast.error('فشل في تحميل المنتجات: ' + msg);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -238,48 +250,81 @@ const AdminProducts = () => {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label className="text-right">صورة المنتج</Label>
+                                <Label className="text-right">صور المنتج (يمكنك اختيار أكثر من صورة)</Label>
                                 <div className="flex flex-col gap-4">
-                                    {newProduct.image && (
-                                        <div className="relative w-full h-48 rounded-xl overflow-hidden border border-gray-200">
-                                            <img src={newProduct.image} alt="Preview" className="w-full h-full object-cover" />
-                                            <button
-                                                onClick={() => setNewProduct({ ...newProduct, image: '' })}
-                                                className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                    {/* Image Preview Grid */}
+                                    {newProduct.images && newProduct.images.length > 0 && (
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {newProduct.images.map((imgUrl, idx) => (
+                                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
+                                                    <img src={imgUrl} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                                                    <button
+                                                        onClick={() => {
+                                                            const newImages = newProduct.images.filter((_, i) => i !== idx);
+                                                            setNewProduct({
+                                                                ...newProduct,
+                                                                images: newImages,
+                                                                image: newImages[0] || '' // Set main image to first available
+                                                            });
+                                                        }}
+                                                        className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                    {idx === 0 && (
+                                                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center py-1">
+                                                            الرئيسية
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
+
+                                    {/* Upload Button */}
                                     <div className="relative">
                                         <Input
                                             type="file"
                                             accept="image/*"
+                                            multiple
                                             onChange={async (e) => {
-                                                const file = e.target.files?.[0];
-                                                if (!file) return;
+                                                const files = e.target.files;
+                                                if (!files || files.length === 0) return;
 
-                                                const toastId = toast.loading('جاري رفع الصورة...');
+                                                const toastId = toast.loading(`جاري رفع ${files.length} صورة...`);
+                                                const uploadedUrls: string[] = [];
+
                                                 try {
-                                                    const fileExt = file.name.split('.').pop();
-                                                    const fileName = `${Math.random()}.${fileExt}`;
-                                                    const filePath = `${fileName}`;
+                                                    for (let i = 0; i < files.length; i++) {
+                                                        const file = files[i];
+                                                        const fileExt = file.name.split('.').pop();
+                                                        const fileName = `${Math.random()}.${fileExt}`;
+                                                        const filePath = `${fileName}`;
 
-                                                    const { error: uploadError } = await supabase.storage
-                                                        .from('product-images')
-                                                        .upload(filePath, file);
+                                                        const { error: uploadError } = await supabase.storage
+                                                            .from('product-images')
+                                                            .upload(filePath, file);
 
-                                                    if (uploadError) throw uploadError;
+                                                        if (uploadError) throw uploadError;
 
-                                                    const { data } = supabase.storage
-                                                        .from('product-images')
-                                                        .getPublicUrl(filePath);
+                                                        const { data } = supabase.storage
+                                                            .from('product-images')
+                                                            .getPublicUrl(filePath);
 
-                                                    setNewProduct({ ...newProduct, image: data.publicUrl });
-                                                    toast.success('تم رفع الصورة بنجاح', { id: toastId });
+                                                        uploadedUrls.push(data.publicUrl);
+                                                    }
+
+                                                    // Update state correctly
+                                                    setNewProduct(prev => ({
+                                                        ...prev,
+                                                        images: [...(prev.images || []), ...uploadedUrls],
+                                                        image: prev.image || uploadedUrls[0] // Set main image if empty
+                                                    }));
+
+                                                    toast.success('تم رفع الصور بنجاح', { id: toastId });
                                                 } catch (error) {
-                                                    console.error('Error uploading image:', error);
-                                                    toast.error('فشل رفع الصورة', { id: toastId });
+                                                    console.error('Error uploading images:', error);
+                                                    toast.error('فشل رفع بعض الصور', { id: toastId });
                                                 }
                                             }}
                                             className="text-right pr-10 pt-2 h-14 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
@@ -301,13 +346,103 @@ const AdminProducts = () => {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label className="text-right">الألوان (مفصول بفاصلة)</Label>
-                                <Input
-                                    value={newProduct.colors}
-                                    onChange={e => setNewProduct({ ...newProduct, colors: e.target.value })}
-                                    placeholder="red, black, white"
-                                    className="text-right"
-                                />
+                                <Label className="text-right">الألوان المتاحة</Label>
+                                <div className="p-4 border rounded-xl bg-gray-50/50 space-y-3">
+                                    <div className="flex flex-wrap gap-2">
+                                        {/* Presets */}
+                                        {[
+                                            { id: 'purple', val: '#8b5cf6', label: 'بـنفسجي' },
+                                            { id: 'black', val: '#0f172a', label: 'أسود' },
+                                            { id: 'white', val: '#ffffff', label: 'أبيض' },
+                                            { id: 'red', val: '#ef4444', label: 'أحمر' },
+                                            { id: 'blue', val: '#2563eb', label: 'أزرق' },
+                                            { id: 'green', val: '#16a34a', label: 'أخضر' },
+                                            { id: 'yellow', val: '#facc15', label: 'أصفر' },
+                                            { id: 'pink', val: '#f472b6', label: 'وردي' },
+                                        ].map((color) => {
+                                            const currentColors = newProduct.colors ? newProduct.colors.split(',').filter(Boolean) : [];
+                                            const isSelected = currentColors.includes(color.id);
+
+                                            return (
+                                                <button
+                                                    key={color.id}
+                                                    onClick={() => {
+                                                        let newColors;
+                                                        if (isSelected) {
+                                                            newColors = currentColors.filter(c => c !== color.id);
+                                                        } else {
+                                                            newColors = [...currentColors, color.id];
+                                                        }
+                                                        setNewProduct({ ...newProduct, colors: newColors.join(',') });
+                                                    }}
+                                                    className={`w-8 h-8 rounded-full border shadow-sm transition-all ${isSelected ? 'ring-2 ring-offset-2 ring-primary scale-110' : 'hover:scale-105 opacity-80 hover:opacity-100'}`}
+                                                    style={{ backgroundColor: color.val }}
+                                                    title={color.label}
+                                                />
+                                            );
+                                        })}
+
+                                        {/* Custom Color Picker */}
+                                        <div className="flex items-center gap-2">
+                                            <div className="relative group">
+                                                <input
+                                                    type="color"
+                                                    id="customColorInput"
+                                                    className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
+                                                    value={customColor}
+                                                    onChange={(e) => setCustomColor(e.target.value)}
+                                                />
+                                                <div
+                                                    className="w-10 h-10 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-primary hover:text-primary transition-colors overflow-hidden"
+                                                    style={{ backgroundColor: customColor }}
+                                                    title="اضغط لاختيار لون"
+                                                >
+                                                    {customColor === '#000000' && <Plus className="w-5 h-5 text-gray-400" />}
+                                                </div>
+                                            </div>
+
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={() => {
+                                                    const currentColors = newProduct.colors ? newProduct.colors.split(',').filter(Boolean) : [];
+                                                    if (!currentColors.includes(customColor)) {
+                                                        const newColors = [...currentColors, customColor];
+                                                        setNewProduct({ ...newProduct, colors: newColors.join(',') });
+                                                        toast.success('تمت إضافة اللون');
+                                                    }
+                                                }}
+                                                className="w-10 h-10 rounded-full bg-green-50 text-green-600 border-green-200 hover:bg-green-100"
+                                                title="تأكيد إضافة اللون"
+                                            >
+                                                <Plus className="w-5 h-5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {/* Selected Colors List (Text/Hex) */}
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {newProduct.colors.split(',').filter(Boolean).map((color, idx) => (
+                                            <div key={idx} className="flex items-center gap-1 bg-white px-2 py-1 rounded-full border text-xs">
+                                                <div
+                                                    className="w-3 h-3 rounded-full border"
+                                                    style={{ backgroundColor: color.startsWith('#') ? color : (color === 'purple' ? '#8b5cf6' : color) }}
+                                                />
+                                                <span>{color}</span>
+                                                <button
+                                                    onClick={() => {
+                                                        const newColors = newProduct.colors.split(',').filter(c => c !== color);
+                                                        setNewProduct({ ...newProduct, colors: newColors.join(',') });
+                                                    }}
+                                                    className="text-gray-400 hover:text-red-500"
+                                                >
+                                                    <Trash2 className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="grid gap-2">
@@ -331,22 +466,22 @@ const AdminProducts = () => {
                     <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-4">
                         <div className="animate-spin text-4xl">⏳</div>
                         <p>جاري تحميل البيانات...</p>
-                        <div className="text-xs text-left p-4 bg-gray-100 rounded-lg font-mono text-gray-600 max-w-md overflow-auto" dir="ltr">
-                            <p><strong>Debug Info:</strong></p>
-                            <p>User Email: {user?.email || 'None'}</p>
-                            <p>User ID: {user?.id || 'None'}</p>
-                            <p>Loading State: true</p>
-                            <p>Supabase Status: Connecting...</p>
+                        <div className="text-xs text-left p-4 bg-red-50 text-red-600 rounded-lg max-w-lg overflow-auto border border-red-200" dir="ltr">
+                            <p className="font-bold">Diagnostic Info:</p>
+                            <p>User: {user ? 'Logged In' : 'No User'}</p>
+                            <p>User ID: {user?.id}</p>
+                            <p>Status: Loading...</p>
                         </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                                setLoading(false);
-                                toast.error('تم إلغاء التحميل يدوياً');
-                            }}
-                        >
-                            فرض إيقاف التحميل
+                    </div>
+                ) : lastError ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                        <div className="text-red-500 text-5xl">⚠️</div>
+                        <h3 className="text-xl font-bold text-red-600">حدث خطأ أثناء التحميل</h3>
+                        <p className="text-gray-600 max-w-md bg-gray-100 p-4 rounded-lg font-mono text-xs dir-ltr text-left">
+                            {lastError}
+                        </p>
+                        <Button onClick={fetchProducts}>
+                            إعادة المحاولة
                         </Button>
                     </div>
                 ) : products.length === 0 ? (
