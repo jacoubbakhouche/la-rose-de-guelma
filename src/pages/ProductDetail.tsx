@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Heart, Star, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
@@ -59,7 +60,28 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin text-4xl">⏳</div></div>;
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 mt-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Skeleton className="w-full aspect-[3/4] rounded-2xl" />
+          <div className="space-y-6">
+            <Skeleton className="h-10 w-3/4" />
+            <Skeleton className="h-6 w-1/4" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+            <div className="flex gap-4 pt-4">
+              <Skeleton className="h-12 w-1/3 rounded-xl" />
+              <Skeleton className="h-12 w-1/3 rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!product) return <div className="min-h-screen flex text-center justify-center p-10"><p>المنتج غير موجود</p></div>;
 
   const discountedPrice = product.discount

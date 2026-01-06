@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Address {
   id: string;
@@ -144,7 +145,23 @@ const Cart = () => {
 
       {/* Cart Items */}
       <div className="container px-4 py-6">
-        {cartItems.length === 0 ? (
+        {loading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex gap-4 bg-card rounded-2xl p-4 shadow-card">
+                <Skeleton className="w-24 h-24 rounded-xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <div className="flex justify-between items-center pt-2">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-8 w-24" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : cartItems.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

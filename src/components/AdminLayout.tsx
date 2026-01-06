@@ -1,7 +1,7 @@
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState } from 'react';
-import { ShoppingBag, Package, LogOut, Menu } from 'lucide-react';
+import { ShoppingBag, Package, LogOut, Menu, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -25,6 +25,7 @@ const AdminLayout = () => {
     const links = [
         { href: '/admin/orders', label: 'الطلبات', icon: ShoppingBag },
         { href: '/admin/products', label: 'المنتجات', icon: Package },
+        { href: '/admin/design', label: 'تخصيص التطبيق', icon: Palette },
     ];
 
     const SidebarContent = () => (

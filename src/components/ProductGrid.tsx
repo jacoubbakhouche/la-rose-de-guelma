@@ -4,6 +4,7 @@ import CategoryPills from './CategoryPills';
 import ProductCard from './ProductCard';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/context/CartContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ProductGrid = () => {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -34,8 +35,12 @@ const ProductGrid = () => {
 
   const filteredProducts = products.filter(p => {
     if (activeCategory === 'all') return true;
-    if (activeCategory === 'sale') return (p.discount || 0) > 0;
-    if (activeCategory === 'new') return p.is_new === true;
+    if (activeCategory === 'new') {
+      const isRecent = p.created_at
+        ? (new Date().getTime() - new Date(p.created_at).getTime()) < (48 * 60 * 60 * 1000)
+        : false;
+      return p.is_new === true || isRecent;
+    }
 
     // Case-insensitive comparison and handle nulls
     const productCategory = (p.category || '').toLowerCase().trim();
@@ -59,7 +64,7 @@ const ProductGrid = () => {
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="bg-gray-100 rounded-2xl h-[300px] animate-pulse" />
+              <Skeleton key={i} className="h-[300px] rounded-2xl" />
             ))}
           </div>
         ) : (

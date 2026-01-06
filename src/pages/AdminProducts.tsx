@@ -23,6 +23,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Product {
     id: string;
@@ -63,7 +64,11 @@ const AdminProducts = () => {
     });
     const [customColor, setCustomColor] = useState('#000000');
 
-    // ... (inside fetchProducts, remains same)
+    useEffect(() => {
+        if (user) {
+            fetchProducts();
+        }
+    }, [user]);
 
     const handleAddProduct = async () => {
         if (!newProduct.name || !newProduct.price || !newProduct.category) {
@@ -463,15 +468,17 @@ const AdminProducts = () => {
                 </Dialog>
 
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-4">
-                        <div className="animate-spin text-4xl">⏳</div>
-                        <p>جاري تحميل البيانات...</p>
-                        <div className="text-xs text-left p-4 bg-red-50 text-red-600 rounded-lg max-w-lg overflow-auto border border-red-200" dir="ltr">
-                            <p className="font-bold">Diagnostic Info:</p>
-                            <p>User: {user ? 'Logged In' : 'No User'}</p>
-                            <p>User ID: {user?.id}</p>
-                            <p>Status: Loading...</p>
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                            <div key={n} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                                <Skeleton className="w-16 h-16 rounded-xl" />
+                                <div className="flex-1 space-y-2">
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-3 w-1/2" />
+                                </div>
+                                <Skeleton className="w-8 h-8 rounded-lg" />
+                            </div>
+                        ))}
                     </div>
                 ) : lastError ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">

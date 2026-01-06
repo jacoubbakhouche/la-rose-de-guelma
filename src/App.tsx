@@ -13,6 +13,7 @@ import Profile from "./pages/Profile";
 import Addresses from "./pages/Addresses";
 import AdminProducts from "./pages/AdminProducts";
 import AdminOrders from "./pages/AdminOrders";
+import AdminDesign from "./pages/AdminDesign";
 import AdminLayout from "./components/AdminLayout";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/admin" element={<AdminLayout />}>
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="orders" element={<AdminOrders />} />
+                <Route path="design" element={<AdminDesign />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

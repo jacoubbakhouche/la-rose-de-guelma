@@ -19,6 +19,7 @@ import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Order {
     id: string;
@@ -98,8 +99,42 @@ const AdminOrders = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center p-12">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-4 w-16" />
+                </div>
+                <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-gray-50/50">
+                                <TableHead className="text-right"><Skeleton className="h-4 w-16" /></TableHead>
+                                <TableHead className="text-right"><Skeleton className="h-4 w-24" /></TableHead>
+                                <TableHead className="text-right"><Skeleton className="h-4 w-20" /></TableHead>
+                                <TableHead className="text-right"><Skeleton className="h-4 w-20" /></TableHead>
+                                <TableHead className="text-right"><Skeleton className="h-4 w-24" /></TableHead>
+                                <TableHead className="text-right"><Skeleton className="h-4 w-16" /></TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <TableRow key={i}>
+                                    <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                                    <TableCell>
+                                        <div className="space-y-1">
+                                            <Skeleton className="h-4 w-24" />
+                                            <Skeleton className="h-3 w-16" />
+                                        </div>
+                                    </TableCell>
+                                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                    <TableCell><Skeleton className="h-8 w-24 rounded-md" /></TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
         );
     }

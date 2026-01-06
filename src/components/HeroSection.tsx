@@ -1,8 +1,40 @@
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import sneakersPurple from '@/assets/sneakers-purple.jpg';
+import { supabase } from '@/integrations/supabase/client';
 
 const HeroSection = () => {
+  const [slides, setSlides] = useState<any[]>([]);
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    supabase
+      .from('hero_slides')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 0) setSlides(data);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
+  const slide = slides.length > 0 ? slides[current] : {
+    title: "Step Into Style",
+    subtitle: "New AirMax 270 react brings bold design.",
+    image_url: sneakersPurple,
+    button_text: "Show more",
+    button_link: "#"
+  };
+
   return (
     <section className="relative overflow-hidden bg-background py-4 md:py-8">
       <div className="container px-4">
@@ -17,34 +49,38 @@ const HeroSection = () => {
           <div className="flex flex-row items-center justify-between gap-3 md:gap-8 relative z-10 w-full">
 
             {/* Left Content */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="flex-[1.2] md:flex-1 space-y-2 md:space-y-6 text-left rtl:text-right z-20"
-            >
-              <h2 className="text-[1.75rem] leading-none md:text-6xl lg:text-[4.5rem] font-bold text-[#1A1B1E] md:leading-[1.1] tracking-tight">
-                Step Into
-                <br />
-                Style
-              </h2>
-
-              <div className="space-y-2 md:space-y-4">
-                <p className="text-muted-foreground text-[10px] md:text-base font-medium leading-relaxed max-w-[140px] md:max-w-sm">
-                  New AirMax 270 react brings bold design.
-                </p>
-
-                <motion.a
-                  href="#"
-                  whileHover={{ x: 5 }}
-                  className="inline-flex items-center gap-1 md:gap-2 text-[#7C3AED] font-bold text-xs md:text-lg hover:text-[#6D28D9] transition-colors"
+            <div className="flex-[1.2] md:flex-1 space-y-2 md:space-y-6 text-left rtl:text-right z-20">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={current}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.5 }}
+                  className="space-y-2 md:space-y-6"
                 >
-                  <span>Show more</span>
-                  <ArrowRight className="w-3 h-3 md:w-5 md:h-5" />
-                </motion.a>
-              </div>
+                  <h2 className="text-[1.75rem] leading-none md:text-6xl lg:text-[4.5rem] font-bold text-[#1A1B1E] md:leading-[1.1] tracking-tight whitespace-pre-line">
+                    {slide.title}
+                  </h2>
 
-              {/* Black Toast - Floating near text */}
+                  <div className="space-y-2 md:space-y-4">
+                    <p className="text-muted-foreground text-[10px] md:text-base font-medium leading-relaxed max-w-[140px] md:max-w-sm">
+                      {slide.subtitle}
+                    </p>
+
+                    <motion.a
+                      href={slide.button_link || '#'}
+                      whileHover={{ x: 5 }}
+                      className="inline-flex items-center gap-1 md:gap-2 text-[#7C3AED] font-bold text-xs md:text-lg hover:text-[#6D28D9] transition-colors"
+                    >
+                      <span>{slide.button_text || 'Show more'}</span>
+                      <ArrowRight className="w-3 h-3 md:w-5 md:h-5" />
+                    </motion.a>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Black Toast - Floating near text (Static) */}
               <div className="pt-3 md:pt-8 block">
                 <div className="bg-[#1A1B1E] text-white pl-2 pr-3 py-1.5 md:pl-4 md:pr-6 md:py-3 rounded-full shadow-xl inline-flex items-center gap-2 md:gap-3 scale-90 origin-left md:scale-100">
                   <div className="w-5 h-5 md:w-8 md:h-8 bg-[#2D2E33] rounded-full flex items-center justify-center">
@@ -59,39 +95,42 @@ const HeroSection = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Right Content - Shoe in White Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="flex-1 w-full max-w-xl relative flex items-center justify-center"
-            >
-              {/* White Card Container */}
-              <div className="bg-white rounded-[1.5rem] md:rounded-[3rem] shadow-sm aspect-square w-full flex items-center justify-center relative p-3 md:p-8">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={current}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.5 }}
+                className="flex-1 w-full max-w-xl relative flex items-center justify-center"
+              >
+                {/* White Card Container */}
+                <div className="bg-white rounded-[1.5rem] md:rounded-[3rem] shadow-sm aspect-square w-full flex items-center justify-center relative p-3 md:p-8">
 
-                {/* Decorative dots inside card */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 md:gap-2">
-                  <div className="w-1 h-1 md:w-2 md:h-2 rounded-full bg-gray-300"></div>
-                  <div className="w-1 h-1 md:w-2 md:h-2 rounded-full bg-gray-800"></div>
-                  <div className="w-1 h-1 md:w-2 md:h-2 rounded-full bg-gray-300"></div>
+                  {/* Decorative dots inside card */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 md:gap-2">
+                    <div className="w-1 h-1 md:w-2 md:h-2 rounded-full bg-gray-300"></div>
+                    <div className="w-1 h-1 md:w-2 md:h-2 rounded-full bg-gray-800"></div>
+                    <div className="w-1 h-1 md:w-2 md:h-2 rounded-full bg-gray-300"></div>
+                  </div>
+
+                  <motion.img
+                    animate={{
+                      y: [0, -8, 0],
+                      filter: ["drop-shadow(0 5px 10px rgba(0,0,0,0.1))", "drop-shadow(0 15px 20px rgba(0,0,0,0.15))", "drop-shadow(0 5px 10px rgba(0,0,0,0.1))"]
+                    }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                    src={slide.image_url || sneakersPurple}
+                    alt={slide.title}
+                    className="w-[110%] h-auto object-contain max-h-[150px] md:max-h-[400px] relative z-10"
+                    style={{ transform: "rotate(-12deg) scale(1.1)" }}
+                  />
                 </div>
-
-                <motion.img
-                  animate={{
-                    y: [0, -8, 0],
-                    filter: ["drop-shadow(0 5px 10px rgba(0,0,0,0.1))", "drop-shadow(0 15px 20px rgba(0,0,0,0.15))", "drop-shadow(0 5px 10px rgba(0,0,0,0.1))"]
-                  }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  src={sneakersPurple}
-                  alt="Air Max 270"
-                  className="w-[110%] h-auto object-contain max-h-[150px] md:max-h-[400px] relative z-10"
-                  style={{ transform: "rotate(-12deg) scale(1.1)" }}
-                />
-              </div>
-
-            </motion.div>
+              </motion.div>
+            </AnimatePresence>
 
           </div>
         </div>
