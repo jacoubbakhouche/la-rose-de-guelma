@@ -1,14 +1,92 @@
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Trash2, Plus, Minus, MoreHorizontal, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Trash2, Plus, Minus, MoreHorizontal, ShoppingBag, MapPin, ChevronRight } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import BottomNav from '@/components/BottomNav';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+
+interface Address {
+  id: string;
+  full_name: string;
+  address_line1: string;
+  wilaya: string;
+  commune: string;
+  phone: string;
+  is_default: boolean;
+}
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [loadingAddress, setLoadingAddress] = useState(false);
+
+  useEffect(() => {
+    if (user && cartItems.length > 0) {
+      fetchDefaultAddress();
+    }
+  }, [user, cartItems]);
+
+  const fetchDefaultAddress = async () => {
+    try {
+      setLoadingAddress(true);
+      const { data, error } = await supabase
+        .from('addresses')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('is_default', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!error && data) {
+        setSelectedAddress(data);
+      }
+    } catch (error) {
+      // Is okay if no address found
+    } finally {
+      setLoadingAddress(false);
+    }
+  };
+
+  // Mock Shipping Prices (To be replaced with real data from user)
+  const getShippingPrice = (wilaya: string, type: 'home' | 'desk') => {
+    // Default prices
+    const basePrice = 600;
+    const deskDiscount = 200;
+
+    // Example logic:
+    if (type === 'desk') return Math.max(0, basePrice - deskDiscount);
+    return basePrice;
+  };
+
+  const [deliveryType, setDeliveryType] = useState<'home' | 'desk'>('home');
+  const shippingPrice = selectedAddress ? getShippingPrice(selectedAddress.wilaya, deliveryType) : 0;
+  const finalTotal = cartTotal + shippingPrice;
+
+  const handleCheckout = () => {
+    if (!user) {
+      toast.error('يرجى تسجيل الدخول أولاً');
+      navigate('/auth');
+      return;
+    }
+    if (!selectedAddress) {
+      toast.error('يرجى إضافة عنوان توصيل');
+      navigate('/addresses');
+      return;
+    }
+
+    // Here we would send the order to Supabase
+    toast.success(`تم الطلب! التوصيل إلى: ${deliveryType === 'home' ? 'المنزل' : 'المكتب'} (${shippingPrice} دج)`);
+    clearCart();
+    navigate('/');
+  };
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
+    <div className="min-h-screen bg-background pb-40 md:pb-8">
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-border/50">
         <div className="container flex items-center justify-between h-16 px-4">
@@ -109,7 +187,7 @@ const Cart = () => {
                         <span className="font-bold text-foreground">
                           {Math.round(itemPrice).toLocaleString()} دج
                         </span>
-                        
+
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-2">
                           <motion.button
@@ -149,30 +227,95 @@ const Cart = () => {
         )}
       </div>
 
-      {/* Checkout Section */}
+      {/* Checkout Section & Address Preview */}
       {cartItems.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-20 md:bottom-0 left-0 right-0 glass border-t border-border/50 p-4"
+          className="fixed bottom-0 left-0 right-0 glass border-t border-border/50 p-6 rounded-t-[2rem] space-y-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
         >
-          <div className="container flex items-center justify-between mb-4">
-            <span className="text-muted-foreground">المجموع:</span>
+          {/* Address Selector Preview */}
+          {user ? (
+            <div className="space-y-3">
+              <Link to="/addresses" className="block">
+                <div className="bg-secondary/50 p-3 rounded-2xl flex items-center gap-3 hover:bg-secondary transition-colors cursor-pointer border border-border/50">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    {selectedAddress ? (
+                      <>
+                        <p className="font-bold text-sm text-foreground">{selectedAddress.full_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{selectedAddress.wilaya}, {selectedAddress.commune}</p>
+                      </>
+                    ) : (
+                      <p className="font-medium text-sm text-foreground">إضافة عنوان توصيل</p>
+                    )}
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </div>
+              </Link>
+
+              {/* Delivery Type Selector */}
+              {selectedAddress && (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setDeliveryType('home')}
+                    className={`p-3 rounded-xl border flex flex-col items-center gap-1 transition-all ${deliveryType === 'home'
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-border bg-card text-muted-foreground'
+                      }`}
+                  >
+                    <span className="text-xs font-bold">توصيل للمنزل</span>
+                    <span className="text-[10px]">{getShippingPrice(selectedAddress.wilaya, 'home')} دج</span>
+                  </button>
+                  <button
+                    onClick={() => setDeliveryType('desk')}
+                    className={`p-3 rounded-xl border flex flex-col items-center gap-1 transition-all ${deliveryType === 'desk'
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-border bg-card text-muted-foreground'
+                      }`}
+                  >
+                    <span className="text-xs font-bold">استلام من المكتب</span>
+                    <span className="text-[10px]">{getShippingPrice(selectedAddress.wilaya, 'desk')} دج</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/auth" className="block text-center text-sm text-primary underline mb-2">
+              سجل الدخول لإتمام الطلب
+            </Link>
+          )}
+
+          <div className="space-y-1 py-2 border-t border-dashed border-border">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">المشتريات:</span>
+              <span className="font-medium">{Math.round(cartTotal).toLocaleString()} دج</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">التوصيل:</span>
+              <span className="font-medium text-primary">{shippingPrice.toLocaleString()} دج</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-border">
+            <span className="text-muted-foreground font-bold">الإجمالي:</span>
             <span className="text-2xl font-bold text-foreground">
-              {Math.round(cartTotal).toLocaleString()} دج
+              {Math.round(finalTotal).toLocaleString()} دج
             </span>
           </div>
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-semibold shadow-soft"
+            onClick={handleCheckout}
+            className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-semibold shadow-soft text-lg"
           >
-            إتمام الطلب
+            تأكيد الطلب
           </motion.button>
         </motion.div>
       )}
-
-      <BottomNav />
     </div>
   );
 };

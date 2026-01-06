@@ -9,6 +9,11 @@ import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
+import Addresses from "./pages/Addresses";
+import AdminProducts from "./pages/AdminProducts";
+import AdminOrders from "./pages/AdminOrders";
+import AdminLayout from "./components/AdminLayout";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,7 +33,15 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/search" element={<Index />} />
               <Route path="/favorites" element={<Index />} />
-              <Route path="/profile" element={<Index />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/addresses" element={<Addresses />} />
+              <Route path="/addresses" element={<Addresses />} />
+
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="orders" element={<AdminOrders />} />
+              </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

@@ -6,6 +6,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isAdmin: boolean;
+  role: string | null;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -17,21 +19,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
+    // Helper to fetch role
+    const fetchRole = async (userId: string) => {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', userId)
+          .single();
+        setRole(data?.role ?? null);
+      } catch (error) {
+        console.error('Error fetching role:', error);
+        setRole(null);
+      }
+    };
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        if (session?.user) {
+          await fetchRole(session.user.id);
+        } else {
+          setRole(null);
+        }
         setLoading(false);
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      if (session?.user) {
+        await fetchRole(session.user.id);
+      } else {
+        setRole(null);
+      }
       setLoading(false);
     });
 
@@ -40,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -51,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     });
-    
+
     return { error: error as Error | null };
   };
 
@@ -60,16 +88,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
     });
-    
+
     return { error: error as Error | null };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    } finally {
+      // Nuking the session from storage to prevent auto-recovery
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      setRole(null);
+      setSession(null);
+      setUser(null);
+    }
   };
 
+  const isAdmin = role === 'admin';
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, role, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

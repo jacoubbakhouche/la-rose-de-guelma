@@ -1,15 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import CategoryPills from './CategoryPills';
 import ProductCard from './ProductCard';
-import { products } from '@/data/products';
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/context/CartContext';
 
 const ProductGrid = () => {
   const [activeCategory, setActiveCategory] = useState('men');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredProducts = activeCategory === 'sale'
-    ? products.filter(p => p.discount)
-    : products.filter(p => p.category === activeCategory || activeCategory === 'all');
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*');
+
+      if (!error && data) {
+        // Transform if necessary to match Product interface
+        // Assuming DB columns match interface mostly
+        setProducts(data as any);
+      }
+    } catch (error) {
+      console.error('Error loading products', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredProducts = products.filter(p => {
+    if (activeCategory === 'sale') return (p.discount || 0) > 0;
+    if (activeCategory === 'new') return p.is_new; // Assuming 'is_new' column
+    return activeCategory === 'all' || p.category === activeCategory;
+  });
 
   return (
     <section className="container px-4 py-8">
@@ -23,17 +50,25 @@ const ProductGrid = () => {
           onCategoryChange={setActiveCategory}
         />
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
-              لا توجد منتجات في هذه الفئة
-            </div>
-          )}
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="bg-gray-100 rounded-2xl h-[300px] animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                لا توجد منتجات في هذه الفئة
+              </div>
+            )}
+          </div>
+        )}
       </motion.div>
     </section>
   );
