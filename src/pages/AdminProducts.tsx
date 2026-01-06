@@ -274,9 +274,14 @@ const AdminProducts = () => {
                 {loading ? (
                     <div className="text-center py-10 text-muted-foreground">جاري التحميل...</div>
                 ) : products.length === 0 ? (
-                    <div className="text-center py-10">
-                        <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500">لا توجد منتجات حالياً</p>
+                    <div className="text-center py-20">
+                        <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                            <span className="text-4xl">📦</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-1">لا توجد منتجات حالياً</h3>
+                        <p className="text-gray-500 max-w-sm mx-auto">
+                            لم تقم بإضافة أي منتجات بعد. ابدأ بإضافة منتجك الأول الآن!
+                        </p>
                     </div>
                 ) : (
                     <div className="space-y-4">

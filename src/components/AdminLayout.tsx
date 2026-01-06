@@ -28,13 +28,13 @@ const AdminLayout = () => {
     ];
 
     const SidebarContent = () => (
-        <div className="flex flex-col h-full">
-            <div className="p-6 border-b border-gray-100">
-                <h1 className="text-xl font-bold text-primary">لوحة التحكم</h1>
-                <p className="text-sm text-gray-500 mt-1">Laroze de Guelma</p>
+        <div className="flex flex-col h-full bg-white/60 backdrop-blur-xl">
+            <div className="p-8 border-b border-gray-100/50">
+                <h1 className="text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">لوحة التحكم</h1>
+                <p className="text-sm font-medium text-gray-500 mt-2">Laroze de Guelma</p>
             </div>
 
-            <nav className="flex-1 px-4 py-6 space-y-2">
+            <nav className="flex-1 px-6 py-8 space-y-4">
                 {links.map((link) => {
                     const Icon = link.icon;
                     const isActive = location.pathname === link.href;
@@ -44,26 +44,27 @@ const AdminLayout = () => {
                             to={link.href}
                             onClick={() => setOpen(false)}
                             className={cn(
-                                "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                                "flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group relative overflow-hidden",
                                 isActive
-                                    ? "bg-primary/10 text-primary font-medium"
-                                    : "text-gray-600 hover:bg-gray-50 hover:text-primary"
+                                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-200 transform scale-105"
+                                    : "bg-white text-gray-600 hover:shadow-lg hover:-translate-y-1 hover:bg-gray-50"
                             )}
                         >
-                            <Icon className="w-5 h-5" />
-                            <span>{link.label}</span>
+                            <Icon className={cn("w-6 h-6 transition-transform group-hover:scale-110", isActive ? "text-white" : "text-gray-400 group-hover:text-purple-600")} />
+                            <span className="font-bold">{link.label}</span>
+                            {isActive && <div className="absolute inset-0 bg-white/10" />}
                         </Link>
                     );
                 })}
             </nav>
 
-            <div className="p-4 border-t border-gray-100 mt-auto">
+            <div className="p-6 border-t border-gray-100/50">
                 <Button
                     variant="ghost"
-                    className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50"
+                    className="w-full h-14 justify-start gap-4 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-2xl text-lg font-bold"
                     onClick={() => signOut()}
                 >
-                    <LogOut className="w-5 h-5" />
+                    <LogOut className="w-6 h-6" />
                     <span>تسجيل الخروج</span>
                 </Button>
             </div>
@@ -88,8 +89,45 @@ const AdminLayout = () => {
             </div>
 
             {/* Desktop Sidebar */}
-            <aside className="w-64 bg-white border-l border-gray-200 hidden md:flex flex-col fixed inset-y-0 right-0 z-50">
-                <SidebarContent />
+            <aside className="w-72 hidden md:flex flex-col fixed inset-y-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-l border-white/20 shadow-2xl transition-all duration-300">
+                <div className="p-8 border-b border-gray-100/50">
+                    <h1 className="text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">لوحة التحكم</h1>
+                    <p className="text-sm font-medium text-gray-500 mt-2">Laroze de Guelma</p>
+                </div>
+
+                <nav className="flex-1 px-6 py-8 space-y-4">
+                    {links.map((link) => {
+                        const Icon = link.icon;
+                        const isActive = location.pathname === link.href;
+                        return (
+                            <Link
+                                key={link.href}
+                                to={link.href}
+                                className={cn(
+                                    "flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group relative overflow-hidden",
+                                    isActive
+                                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-200 transform scale-105"
+                                        : "bg-white text-gray-600 hover:shadow-lg hover:-translate-y-1 hover:bg-gray-50"
+                                )}
+                            >
+                                <Icon className={cn("w-6 h-6 transition-transform group-hover:scale-110", isActive ? "text-white" : "text-gray-400 group-hover:text-purple-600")} />
+                                <span className="font-bold">{link.label}</span>
+                                {isActive && <div className="absolute inset-0 bg-white/10" />}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                <div className="p-6 border-t border-gray-100/50">
+                    <Button
+                        variant="ghost"
+                        className="w-full h-14 justify-start gap-4 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-2xl text-lg font-bold"
+                        onClick={() => signOut()}
+                    >
+                        <LogOut className="w-6 h-6" />
+                        <span>تسجيل الخروج</span>
+                    </Button>
+                </div>
             </aside>
 
             {/* Main Content */}
