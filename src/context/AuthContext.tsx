@@ -108,6 +108,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setRole(null);
       setSession(null);
       setUser(null);
+
+      // Force a hard reload to clear any persistent memory state
+      window.location.replace('/');
     }
   };
 
