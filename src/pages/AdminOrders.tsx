@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { Loader2, Search, ImageIcon } from 'lucide-react';
+import { Loader2, Search, ImageIcon, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -75,6 +75,25 @@ const AdminOrders = () => {
         } catch (error) {
             console.error('Error updating status:', error);
             toast.error('فشل تحديث الحالة');
+        }
+    };
+
+    const deleteOrder = async (id: string) => {
+        if (!window.confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟')) return;
+
+        try {
+            const { error } = await supabase
+                .from('orders')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setOrders(orders.filter(o => o.id !== id));
+            toast.success('تم حذف الطلب بنجاح');
+        } catch (error) {
+            console.error('Error deleting order:', error);
+            toast.error('فشل حذف الطلب');
         }
     };
 
@@ -246,6 +265,13 @@ const AdminOrders = () => {
                                         <SelectItem value="cancelled">ملغى</SelectItem>
                                     </SelectContent>
                                 </Select>
+                                <button
+                                    onClick={() => deleteOrder(order.id)}
+                                    className="w-9 h-9 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors mr-2"
+                                    title="حذف الطلب"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
                             </div>
                         </div>
                     ))
@@ -263,6 +289,7 @@ const AdminOrders = () => {
                             <TableHead className="text-right">السعر الإجمالي</TableHead>
                             <TableHead className="text-right">التاريخ</TableHead>
                             <TableHead className="text-right">الحالة</TableHead>
+                            <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -332,6 +359,15 @@ const AdminOrders = () => {
                                                 <SelectItem value="cancelled">ملغى</SelectItem>
                                             </SelectContent>
                                         </Select>
+                                    </TableCell>
+                                    <TableCell>
+                                        <button
+                                            onClick={() => deleteOrder(order.id)}
+                                            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                                            title="حذف الطلب"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     </TableCell>
                                 </TableRow>
                             ))

@@ -188,9 +188,9 @@ const AdminProducts = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen bg-gray-50 pb-20 w-full max-w-[100vw] overflow-x-hidden">
             <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-                <div className="container flex items-center justify-between h-16 px-4">
+                <div className="w-full max-w-5xl mx-auto px-4 flex items-center justify-between h-16">
                     <Link to="/profile">
                         <motion.button
                             whileHover={{ scale: 1.05 }}
@@ -205,7 +205,7 @@ const AdminProducts = () => {
                 </div>
             </header>
 
-            <main className="container px-4 py-6 space-y-6">
+            <main className="w-full max-w-5xl mx-auto px-4 py-6 space-y-6">
 
                 {/* Search Bar */}
                 <div className="relative">
@@ -233,7 +233,7 @@ const AdminProducts = () => {
                             <span>إضافة منتج جديد</span>
                         </motion.button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-lg h-[80vh] overflow-y-auto">
+                    <DialogContent className="sm:max-w-lg h-[80vh] overflow-y-auto w-[95vw] sm:w-full">
                         <DialogHeader>
                             <DialogTitle className="text-right">
                                 {editingId ? 'تعديل المنتج' : 'بيانات المنتج الجديد'}
@@ -531,7 +531,7 @@ const AdminProducts = () => {
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
-                                    className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm"
+                                    className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm overflow-hidden w-full"
                                 >
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -539,8 +539,8 @@ const AdminProducts = () => {
                                                 <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <h3 className="font-bold text-gray-900 truncate">{product.name}</h3>
-                                                <p className="text-sm text-gray-500">{product.category}</p>
+                                                <h3 className="font-bold text-gray-900 text-sm line-clamp-2 leading-tight">{product.name}</h3>
+                                                <p className="text-xs text-gray-500 mt-0.5">{product.category}</p>
                                                 <p className="text-sm font-bold text-primary mt-1">{product.price.toLocaleString()} دج</p>
                                             </div>
                                         </div>
@@ -564,18 +564,18 @@ const AdminProducts = () => {
                                         </div>
                                     </div>
 
-                                    {/* Mobile Actions - Full Width Buttons below */}
-                                    <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t sm:hidden">
+                                    {/* Mobile Actions - Flex Row ensuring fit */}
+                                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100 sm:hidden">
                                         <button
                                             onClick={() => handleEdit(product)}
-                                            className="flex items-center justify-center gap-2 h-10 rounded-xl bg-blue-50 text-blue-600 font-medium hover:bg-blue-100 transition-colors active:scale-95"
+                                            className="flex-1 flex items-center justify-center gap-2 h-10 rounded-xl bg-blue-50 text-blue-600 font-medium hover:bg-blue-100 transition-colors active:scale-95 text-sm"
                                         >
                                             <Pencil className="w-4 h-4" />
                                             <span>تعديل</span>
                                         </button>
                                         <button
                                             onClick={() => handleDelete(product.id)}
-                                            className="flex items-center justify-center gap-2 h-10 rounded-xl bg-red-50 text-red-600 font-medium hover:bg-red-100 transition-colors active:scale-95"
+                                            className="flex-1 flex items-center justify-center gap-2 h-10 rounded-xl bg-red-50 text-red-600 font-medium hover:bg-red-100 transition-colors active:scale-95 text-sm"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                             <span>حذف</span>
