@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Plus, Trash2, Package, Save, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Package, Save, Image as ImageIcon, Pencil, Search } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,12 @@ interface Product {
     price: number;
     category: string;
     image: string;
+    images?: string[];
     discount?: number;
+    description?: string;
+    colors?: string[];
+    sizes?: string[];
+    is_new?: boolean;
 }
 
 const CATEGORIES = [
@@ -49,6 +54,8 @@ const AdminProducts = () => {
     const [loading, setLoading] = useState(true);
     const [isOpen, setIsOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Form State
     const [newProduct, setNewProduct] = useState({
@@ -56,13 +63,14 @@ const AdminProducts = () => {
         price: '',
         description: '',
         image: '',
-        images: [] as string[], // Multiple images
+        images: [] as string[],
         category: '',
         discount: '',
         colors: '',
         sizes: ''
     });
     const [customColor, setCustomColor] = useState('#000000');
+    const [lastError, setLastError] = useState<string | null>(null);
 
     useEffect(() => {
         if (user) {
@@ -70,7 +78,30 @@ const AdminProducts = () => {
         }
     }, [user]);
 
-    const handleAddProduct = async () => {
+    const resetForm = () => {
+        setNewProduct({
+            name: '', price: '', description: '', image: '', images: [], category: '', discount: '', colors: '', sizes: ''
+        });
+        setEditingId(null);
+    };
+
+    const handleEdit = (product: Product) => {
+        setEditingId(product.id);
+        setNewProduct({
+            name: product.name,
+            price: product.price.toString(),
+            description: product.description || '',
+            image: product.image,
+            images: product.images || [],
+            category: product.category,
+            discount: product.discount?.toString() || '',
+            colors: Array.isArray(product.colors) ? product.colors.join(',') : '',
+            sizes: Array.isArray(product.sizes) ? product.sizes.join(',') : ''
+        });
+        setIsOpen(true);
+    };
+
+    const handleSaveProduct = async () => {
         if (!newProduct.name || !newProduct.price || !newProduct.category) {
             toast.error('يرجى ملء الحقول الأساسية');
             return;
@@ -83,7 +114,7 @@ const AdminProducts = () => {
                 description: newProduct.description,
                 price: parseFloat(newProduct.price),
                 image: newProduct.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80',
-                images: newProduct.images.length > 0 ? newProduct.images : [newProduct.image], // Save array
+                images: newProduct.images.length > 0 ? newProduct.images : [newProduct.image],
                 category: newProduct.category,
                 discount: newProduct.discount ? parseInt(newProduct.discount) : 0,
                 colors: newProduct.colors ? newProduct.colors.split(',').map(s => s.trim()) : [],
@@ -91,65 +122,48 @@ const AdminProducts = () => {
                 is_new: newProduct.category === 'new'
             };
 
-            const { error } = await supabase.from('products').insert(payload);
+            let error;
+            if (editingId) {
+                // Update
+                const res = await supabase.from('products').update(payload).eq('id', editingId);
+                error = res.error;
+            } else {
+                // Insert
+                const res = await supabase.from('products').insert(payload);
+                error = res.error;
+            }
+
             if (error) throw error;
 
-            toast.success('تمت إضافة المنتج بنجاح');
+            toast.success(editingId ? 'تم تحديث المنتج' : 'تمت إضافة المنتج');
             setIsOpen(false);
-            setNewProduct({
-                name: '', price: '', description: '', image: '', images: [], category: '', discount: '', colors: '', sizes: ''
-            });
+            resetForm();
             fetchProducts();
         } catch (error) {
-            console.error('Error adding product:', error);
-            toast.error('حدث خطأ أثناء الإضافة');
+            console.error('Error saving product:', error);
+            toast.error('حدث خطأ أثناء الحفظ');
         } finally {
             setSubmitting(false);
         }
     };
 
-    const [lastError, setLastError] = useState<string | null>(null);
-
     const fetchProducts = async () => {
         try {
-            console.log('AdminProducts: starting fetch');
             setLoading(true);
             setLastError(null);
 
-            // Check session first
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError) throw new Error('Session Error: ' + sessionError.message);
-            if (!session) throw new Error('No active session user');
-
-            // Timeout Promise
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Timeout: Server took too long to respond (Check RLS Policies)')), 10000)
-            );
-
-            // Fetch Data Promise
-            const fetchPromise = supabase
+            const { data, error } = await supabase
                 .from('products')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            // Race
-            const { data, error } = await Promise.race([
-                fetchPromise.then(res => res),
-                timeoutPromise
-            ]) as any;
+            if (error) throw error;
 
-            if (error) {
-                console.error('Supabase error:', error);
-                throw error;
-            }
-
-            console.log('AdminProducts: fetch success', data?.length);
             setProducts(data || []);
         } catch (error: any) {
             console.error('Error fetching products:', error);
-            const msg = error.message || 'خطأ غير معروف';
-            setLastError(msg);
-            toast.error('فشل في تحميل المنتجات: ' + msg);
+            setLastError(error.message);
+            toast.error('فشل في تحميل المنتجات');
         } finally {
             setLoading(false);
         }
@@ -167,6 +181,11 @@ const AdminProducts = () => {
             toast.error('فشل الحذف');
         }
     };
+
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
@@ -188,8 +207,22 @@ const AdminProducts = () => {
 
             <main className="container px-4 py-6 space-y-6">
 
+                {/* Search Bar */}
+                <div className="relative">
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Input
+                        placeholder="بحث عن منتج..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pr-10 h-12 rounded-xl bg-white border-gray-100 shadow-sm text-right focus-visible:ring-purple-500"
+                    />
+                </div>
+
                 {/* Add New Button */}
-                <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <Dialog open={isOpen} onOpenChange={(open) => {
+                    setIsOpen(open);
+                    if (!open) resetForm();
+                }}>
                     <DialogTrigger asChild>
                         <motion.button
                             whileHover={{ scale: 1.02 }}
@@ -202,7 +235,9 @@ const AdminProducts = () => {
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-lg h-[80vh] overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle className="text-right">بيانات المنتج</DialogTitle>
+                            <DialogTitle className="text-right">
+                                {editingId ? 'تعديل المنتج' : 'بيانات المنتج الجديد'}
+                            </DialogTitle>
                         </DialogHeader>
                         <div className="flex flex-col gap-4 py-4">
 
@@ -255,7 +290,7 @@ const AdminProducts = () => {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label className="text-right">صور المنتج (يمكنك اختيار أكثر من صورة)</Label>
+                                <Label className="text-right">صور المنتج</Label>
                                 <div className="flex flex-col gap-4">
                                     {/* Image Preview Grid */}
                                     {newProduct.images && newProduct.images.length > 0 && (
@@ -269,7 +304,7 @@ const AdminProducts = () => {
                                                             setNewProduct({
                                                                 ...newProduct,
                                                                 images: newImages,
-                                                                image: newImages[0] || '' // Set main image to first available
+                                                                image: newImages[0] || ''
                                                             });
                                                         }}
                                                         className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -319,11 +354,10 @@ const AdminProducts = () => {
                                                         uploadedUrls.push(data.publicUrl);
                                                     }
 
-                                                    // Update state correctly
                                                     setNewProduct(prev => ({
                                                         ...prev,
                                                         images: [...(prev.images || []), ...uploadedUrls],
-                                                        image: prev.image || uploadedUrls[0] // Set main image if empty
+                                                        image: prev.image || uploadedUrls[0]
                                                     }));
 
                                                     toast.success('تم رفع الصور بنجاح', { id: toastId });
@@ -354,7 +388,6 @@ const AdminProducts = () => {
                                 <Label className="text-right">الألوان المتاحة</Label>
                                 <div className="p-4 border rounded-xl bg-gray-50/50 space-y-3">
                                     <div className="flex flex-wrap gap-2">
-                                        {/* Presets */}
                                         {[
                                             { id: 'purple', val: '#8b5cf6', label: 'بـنفسجي' },
                                             { id: 'black', val: '#0f172a', label: 'أسود' },
@@ -387,7 +420,6 @@ const AdminProducts = () => {
                                             );
                                         })}
 
-                                        {/* Custom Color Picker */}
                                         <div className="flex items-center gap-2">
                                             <div className="relative group">
                                                 <input
@@ -400,7 +432,6 @@ const AdminProducts = () => {
                                                 <div
                                                     className="w-10 h-10 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-primary hover:text-primary transition-colors overflow-hidden"
                                                     style={{ backgroundColor: customColor }}
-                                                    title="اضغط لاختيار لون"
                                                 >
                                                     {customColor === '#000000' && <Plus className="w-5 h-5 text-gray-400" />}
                                                 </div>
@@ -419,14 +450,12 @@ const AdminProducts = () => {
                                                     }
                                                 }}
                                                 className="w-10 h-10 rounded-full bg-green-50 text-green-600 border-green-200 hover:bg-green-100"
-                                                title="تأكيد إضافة اللون"
                                             >
                                                 <Plus className="w-5 h-5" />
                                             </Button>
                                         </div>
                                     </div>
 
-                                    {/* Selected Colors List (Text/Hex) */}
                                     <div className="flex flex-wrap gap-2 mt-2">
                                         {newProduct.colors.split(',').filter(Boolean).map((color, idx) => (
                                             <div key={idx} className="flex items-center gap-1 bg-white px-2 py-1 rounded-full border text-xs">
@@ -460,8 +489,8 @@ const AdminProducts = () => {
                                 />
                             </div>
 
-                            <Button onClick={handleAddProduct} disabled={submitting} className="mt-4 w-full">
-                                {submitting ? 'جاري الحفظ...' : 'حفظ المنتج'}
+                            <Button onClick={handleSaveProduct} disabled={submitting} className="mt-4 w-full">
+                                {submitting ? 'جاري الحفظ...' : (editingId ? 'تحديث المنتج' : 'حفظ المنتج')}
                             </Button>
                         </div>
                     </DialogContent>
@@ -469,65 +498,87 @@ const AdminProducts = () => {
 
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-                            <div key={n} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                                <Skeleton className="w-16 h-16 rounded-xl" />
-                                <div className="flex-1 space-y-2">
-                                    <Skeleton className="h-4 w-3/4" />
-                                    <Skeleton className="h-3 w-1/2" />
-                                </div>
-                                <Skeleton className="w-8 h-8 rounded-lg" />
-                            </div>
+                        {[1, 2, 3, 4].map((n) => (
+                            <Skeleton key={n} className="h-24 w-full rounded-2xl" />
                         ))}
                     </div>
-                ) : lastError ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-                        <div className="text-red-500 text-5xl">⚠️</div>
-                        <h3 className="text-xl font-bold text-red-600">حدث خطأ أثناء التحميل</h3>
-                        <p className="text-gray-600 max-w-md bg-gray-100 p-4 rounded-lg font-mono text-xs dir-ltr text-left">
-                            {lastError}
-                        </p>
-                        <Button onClick={fetchProducts}>
-                            إعادة المحاولة
-                        </Button>
-                    </div>
-                ) : products.length === 0 ? (
+                ) : filteredProducts.length === 0 ? (
                     <div className="text-center py-20">
-                        <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-                            <span className="text-4xl">📦</span>
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">لا توجد منتجات حالياً</h3>
-                        <p className="text-gray-500 max-w-sm mx-auto">
-                            لم تقم بإضافة أي منتجات بعد. ابدأ بإضافة منتجك الأول الآن!
-                        </p>
+                        {searchTerm ? (
+                            <>
+                                <div className="text-4xl mb-4">🔍</div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-1">لا توجد نتائج</h3>
+                                <p className="text-gray-500">جرب البحث بكلمات أخرى</p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                                    <span className="text-4xl">📦</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-1">لا توجد منتجات حالياً</h3>
+                                <p className="text-gray-500 max-w-sm mx-auto">
+                                    لم تقم بإضافة أي منتجات بعد.
+                                </p>
+                            </>
+                        )}
                     </div>
                 ) : (
                     <div className="space-y-4">
                         <AnimatePresence>
-                            {products.map((product) => (
+                            {filteredProducts.map((product) => (
                                 <motion.div
                                     key={product.id}
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
-                                    className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4"
+                                    className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm"
                                 >
-                                    <div className="w-16 h-16 rounded-xl bg-gray-50 overflow-hidden flex-shrink-0">
-                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <div className="w-16 h-16 rounded-xl bg-gray-50 overflow-hidden flex-shrink-0">
+                                                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-bold text-gray-900 truncate">{product.name}</h3>
+                                                <p className="text-sm text-gray-500">{product.category}</p>
+                                                <p className="text-sm font-bold text-primary mt-1">{product.price.toLocaleString()} دج</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Desktop Actions */}
+                                        <div className="hidden sm:flex items-center gap-2 self-center">
+                                            <button
+                                                onClick={() => handleEdit(product)}
+                                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors"
+                                                title="تعديل"
+                                            >
+                                                <Pencil className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(product.id)}
+                                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                                                title="حذف"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-gray-900 truncate">{product.name}</h3>
-                                        <p className="text-sm text-gray-500">{product.category}</p>
-                                        <p className="text-sm font-bold text-primary mt-1">{product.price.toLocaleString()} دج</p>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
+                                    {/* Mobile Actions - Full Width Buttons below */}
+                                    <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t sm:hidden">
+                                        <button
+                                            onClick={() => handleEdit(product)}
+                                            className="flex items-center justify-center gap-2 h-10 rounded-xl bg-blue-50 text-blue-600 font-medium hover:bg-blue-100 transition-colors active:scale-95"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                            <span>تعديل</span>
+                                        </button>
                                         <button
                                             onClick={() => handleDelete(product.id)}
-                                            className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                                            className="flex items-center justify-center gap-2 h-10 rounded-xl bg-red-50 text-red-600 font-medium hover:bg-red-100 transition-colors active:scale-95"
                                         >
                                             <Trash2 className="w-4 h-4" />
+                                            <span>حذف</span>
                                         </button>
                                     </div>
                                 </motion.div>
