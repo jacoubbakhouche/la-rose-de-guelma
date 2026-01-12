@@ -138,14 +138,14 @@ const Header = () => {
               animate={{ opacity: 1, x: 0 }}
               className="text-xl font-bold tracking-tight text-foreground hidden md:block"
             >
-              LAROZE
+              LAROSE
             </motion.h1>
             <motion.h1
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="text-xl font-bold tracking-tight text-foreground md:hidden"
             >
-              LAROZE
+              LAROSE
             </motion.h1>
           </Link>
         </div>

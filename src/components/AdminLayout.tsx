@@ -32,7 +32,7 @@ const AdminLayout = () => {
         <div className="flex flex-col h-full bg-white/60 backdrop-blur-xl">
             <div className="p-8 border-b border-gray-100/50">
                 <h1 className="text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">لوحة التحكم</h1>
-                <p className="text-sm font-medium text-gray-500 mt-2">Laroze de Guelma</p>
+                <p className="text-sm font-medium text-gray-500 mt-2">Larose de Guelma</p>
             </div>
 
             <nav className="flex-1 px-6 py-8 space-y-4">
@@ -93,7 +93,7 @@ const AdminLayout = () => {
             <aside className="w-72 hidden md:flex flex-col fixed inset-y-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-l border-white/20 shadow-2xl transition-all duration-300">
                 <div className="p-8 border-b border-gray-100/50">
                     <h1 className="text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">لوحة التحكم</h1>
-                    <p className="text-sm font-medium text-gray-500 mt-2">Laroze de Guelma</p>
+                    <p className="text-sm font-medium text-gray-500 mt-2">Larose de Guelma</p>
                 </div>
 
                 <nav className="flex-1 px-6 py-8 space-y-4">
