@@ -289,7 +289,7 @@ const AdminDesign = () => {
                                             key={p.id}
                                             onClick={() => {
                                                 if (pickingSlideId) {
-                                                    updateSlide(pickingSlideId, { button_link: `/products/${p.id}` });
+                                                    updateSlide(pickingSlideId, { button_link: `/product/${p.id}` });
                                                     setIsPickerOpen(false);
                                                     toast.success("تم اختيار المنتج");
                                                 }

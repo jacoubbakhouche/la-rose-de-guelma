@@ -69,7 +69,7 @@ const HeroSection = () => {
                     </p>
 
                     <motion.a
-                      href={slide.button_link || '#'}
+                      href={(slide.button_link || '#').replace('/products/', '/product/')}
                       whileHover={{ x: 5 }}
                       className="inline-flex items-center gap-1 md:gap-2 text-[#7C3AED] font-bold text-xs md:text-lg hover:text-[#6D28D9] transition-colors"
                     >

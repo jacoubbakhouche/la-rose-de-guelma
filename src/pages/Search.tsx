@@ -8,6 +8,56 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Search as SearchIcon, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion';
+
+const EmptyBox3D = () => {
+    return (
+        <div className="perspective-[800px] w-32 h-32 mx-auto my-8">
+            <motion.div
+                className="w-full h-full relative"
+                style={{ transformStyle: "preserve-3d" }}
+                animate={{ rotateY: 360, rotateX: -10 }}
+                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            >
+                {/* Front */}
+                <div className="absolute inset-0 bg-[#E8A67F] border-4 border-[#DFA17A] flex flex-col items-center justify-center backface-hidden shadow-inset"
+                    style={{ transform: "translateZ(64px)" }}>
+                    <div className="absolute top-0 w-8 h-full bg-[#4A6CF7]/20 border-x border-[#4A6CF7]/30" />
+                    <span className="font-black text-white text-xl tracking-wider select-none relative z-10 drop-shadow-md">LAROSE</span>
+                    <div className="absolute bottom-4 w-12 h-1 bg-white/40 rounded-full" />
+                </div>
+                {/* Back */}
+                <div className="absolute inset-0 bg-[#E8A67F] border-4 border-[#DFA17A] backface-hidden"
+                    style={{ transform: "rotateY(180deg) translateZ(64px)" }}>
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-full bg-[#4A6CF7]/20 border-x border-[#4A6CF7]/30" />
+                </div>
+                {/* Right */}
+                <div className="absolute inset-0 bg-[#E09F7D] border-4 border-[#D6966F] backface-hidden"
+                    style={{ transform: "rotateY(90deg) translateZ(64px)" }}>
+                    <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-8 bg-[#4A6CF7]/20 border-y border-[#4A6CF7]/30" />
+                </div>
+                {/* Left */}
+                <div className="absolute inset-0 bg-[#E09F7D] border-4 border-[#D6966F] backface-hidden"
+                    style={{ transform: "rotateY(-90deg) translateZ(64px)" }}>
+                    <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-8 bg-[#4A6CF7]/20 border-y border-[#4A6CF7]/30" />
+                </div>
+                {/* Top */}
+                <div className="absolute inset-0 bg-[#F0AF8F] border-4 border-[#E5A585] flex items-center justify-center backface-hidden"
+                    style={{ transform: "rotateX(90deg) translateZ(64px)" }}>
+                    {/* Flaps */}
+                    <div className="absolute inset-0 border-t-2 border-b-2 border-dashed border-[#D6966F]/50" />
+                    <div className="w-8 h-full bg-[#4A6CF7] opacity-90 shadow-sm" />
+                </div>
+                {/* Bottom */}
+                <div className="absolute inset-0 bg-[#C88A68] border-4 border-[#B87A58] backface-hidden"
+                    style={{ transform: "rotateX(-90deg) translateZ(64px)" }} />
+            </motion.div>
+
+            {/* Shadow */}
+            <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-24 h-6 bg-black/10 blur-xl rounded-[100%] animate-pulse" />
+        </div>
+    );
+};
 
 const Search = () => {
     const navigate = useNavigate();
@@ -50,7 +100,7 @@ const Search = () => {
             {/* Search Header */}
             <div className="sticky top-0 z-50 bg-background border-b p-4 flex items-center gap-3">
                 <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
-                    <ArrowLeft className="w-5 h-5" />
+                    <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
                 </Button>
                 <div className="relative flex-1">
                     <SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -113,9 +163,17 @@ const Search = () => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-4">
-                                <SearchIcon className="w-12 h-12 opacity-20" />
-                                <p>لا توجد نتائج مطابقة</p>
+                            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-6 min-h-[50vh]">
+                                <EmptyBox3D />
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="text-center space-y-2"
+                                >
+                                    <h3 className="text-xl font-bold text-foreground">لا توجد منتجات هنا!</h3>
+                                    <p className="text-sm">لم نتمكن من العثور على أي منتجات في هذه الفئة.</p>
+                                </motion.div>
                             </div>
                         )}
                     </div>

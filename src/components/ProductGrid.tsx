@@ -107,7 +107,7 @@ const ProductGrid = ({ searchTerm = '' }: ProductGridProps) => {
                   <div key={rowIndex} className="space-y-2">
                     {/* Optional: Add Row Title if grouped by something, but here generic rows */}
                     <div
-                      className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4"
+                      className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide"
                       style={{
                         scrollbarWidth: 'none',
                         msOverflowStyle: 'none'
