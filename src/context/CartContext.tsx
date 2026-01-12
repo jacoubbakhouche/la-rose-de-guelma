@@ -68,13 +68,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) throw error;
 
-      const items: CartItem[] = data.map((item: any) => ({
-        ...item.product,
-        quantity: item.quantity,
-        selectedSize: item.size, // Assuming column name in cart_items table is 'size' or we need to add it
-        selectedColor: item.color,
-        // Make sure to map strict product fields if needed, but spreading product is often enough
-      }));
+      const items: CartItem[] = (data || [])
+        .filter((item: any) => item.product)
+        .map((item: any) => ({
+          ...item.product,
+          quantity: item.quantity,
+          selectedSize: item.size,
+          selectedColor: item.color,
+        }));
       setCartItems(items);
     } catch (error) {
       console.error('Error fetching cart:', error);

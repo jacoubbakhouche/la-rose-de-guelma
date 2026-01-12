@@ -20,7 +20,7 @@ interface Address {
 }
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal, loading } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);

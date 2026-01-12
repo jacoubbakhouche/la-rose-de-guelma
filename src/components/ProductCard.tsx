@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Product } from '@/context/CartContext';
-import { Flame } from 'lucide-react';
+import { Flame, Heart } from 'lucide-react';
+import { useFavorites } from '@/context/FavoritesContext';
 
 interface ProductCardProps {
   product: Product;
@@ -9,6 +10,9 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, index }: ProductCardProps) => {
+  const { toggleFavorite, isFavorite } = useFavorites();
+  const isFav = isFavorite(product.id);
+
   // Logic to determine if product is "new" (added in last 48 hours)
   const isRecent = product.created_at
     ? (new Date().getTime() - new Date(product.created_at).getTime()) < (48 * 60 * 60 * 1000)
@@ -58,6 +62,17 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
                 </span>
               </div>
             )}
+
+            {/* Favorite Button */}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                toggleFavorite(product);
+              }}
+              className="absolute bottom-2 right-2 z-20 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:scale-110 transition-transform"
+            >
+              <Heart className={`w-5 h-5 transition-colors ${isFav ? 'text-red-500 fill-red-500' : 'text-gray-600'}`} />
+            </button>
           </div>
 
           <div className="p-4 text-right">

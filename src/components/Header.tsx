@@ -1,4 +1,4 @@
-import { Search, ShoppingBag, User, LogOut, Menu, Heart, Package } from 'lucide-react';
+import { Search, ShoppingBag, User, LogOut, Menu, Heart, Package, Home, ChevronLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
@@ -31,71 +31,98 @@ const Header = () => {
   };
 
   const SidebarContent = () => (
-    <div className="flex flex-col gap-6 mt-8">
-      {/* User Info / Profile Link */}
-      {user ? (
-        <div className="flex items-center gap-3 p-4 bg-secondary/50 rounded-2xl">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <User className="w-6 h-6 text-primary" />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-sm text-foreground truncate">{user.email}</p>
-            <Link to="/profile" className="text-xs text-muted-foreground hover:text-primary transition-colors">
-              عرض الملف الشخصي
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <Link to="/auth" className="flex items-center gap-3 p-4 bg-secondary/50 rounded-2xl">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <User className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <p className="font-medium text-sm">زائر</p>
-            <p className="text-xs text-muted-foreground">سجل الدخول للمزيد</p>
-          </div>
-        </Link>
-      )}
-
-      <div className="space-y-2">
-        {isAdmin && (
-          <Link to="/admin/orders" className="flex items-center gap-4 p-4 hover:bg-purple-50 rounded-xl transition-colors group mb-2 border border-purple-100 bg-purple-50/50">
-            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-              <Package className="w-5 h-5 text-purple-600" />
-            </div>
-            <span className="font-bold text-purple-700">لوحة المشرف</span>
-          </Link>
-        )}
-        <Link to="/favorites" className="flex items-center gap-4 p-4 hover:bg-secondary rounded-xl transition-colors group">
-          <div className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center group-hover:bg-pink-100 transition-colors">
-            <Heart className="w-5 h-5 text-pink-500" />
-          </div>
-          <span className="font-medium">المفضلة</span>
-        </Link>
-
-        <Link to="/profile" className="flex items-center gap-4 p-4 hover:bg-secondary rounded-xl transition-colors group">
-          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-            <User className="w-5 h-5 text-blue-500" />
-          </div>
-          <span className="font-medium">حسابي</span>
-        </Link>
-
+    <div className="flex flex-col h-full py-4">
+      {/* User Section */}
+      <div className="mb-6 px-2">
         {user ? (
-          <button onClick={handleSignOut} className="w-full flex items-center gap-4 p-4 hover:bg-red-50 rounded-xl transition-colors group text-red-600">
-            <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center group-hover:bg-red-100 transition-colors">
-              <LogOut className="w-5 h-5" />
+          <div className="relative overflow-hidden rounded-3xl p-5 bg-gradient-to-br from-primary to-purple-700 text-white shadow-lg border border-white/10">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+            <div className="relative z-10 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner">
+                <User className="w-7 h-7 text-white" />
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <p className="font-bold text-lg truncate">{user.email?.split('@')[0]}</p>
+                <Link to="/profile" className="text-xs text-white/80 hover:text-white flex items-center gap-1 mt-1 transition-colors">
+                  <span>عرض الملف</span>
+                  <ChevronLeft className="w-3 h-3" />
+                </Link>
+              </div>
             </div>
-            <span className="font-medium">تسجيل الخروج</span>
-          </button>
+          </div>
         ) : (
-          <Link to="/auth" className="flex items-center gap-4 p-4 hover:bg-secondary rounded-xl transition-colors group">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-              <User className="w-5 h-5 text-primary" />
+          <Link to="/auth">
+            <div className="relative overflow-hidden rounded-3xl p-5 bg-gradient-to-br from-gray-900 to-gray-800 text-white shadow-lg border border-white/5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
+                  <User className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="font-bold">زائر</p>
+                  <p className="text-xs text-gray-300">سجل الدخول للمزيد</p>
+                </div>
+              </div>
             </div>
-            <span className="font-medium">تسجيل الدخول</span>
           </Link>
         )}
       </div>
+
+      {/* Navigation */}
+      <div className="flex-1 space-y-2 px-2">
+        <Link to="/" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-secondary/80 transition-all group border border-transparent hover:border-border/50">
+          <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+            <Home className="w-5 h-5 text-primary" />
+          </div>
+          <span className="font-medium text-lg text-foreground">الرئيسية</span>
+        </Link>
+
+        <Link to="/orders" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-secondary/80 transition-all group border border-transparent hover:border-border/50">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
+            <Package className="w-5 h-5 text-indigo-500" />
+          </div>
+          <span className="font-medium text-lg text-foreground">طلباتي</span>
+        </Link>
+        <Link to="/favorites" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-secondary/80 transition-all group border border-transparent hover:border-border/50">
+          <div className="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center group-hover:bg-pink-100 transition-colors">
+            <Heart className="w-5 h-5 text-pink-500" />
+          </div>
+          <span className="font-medium text-lg text-foreground">المفضلة</span>
+        </Link>
+
+        {user && (
+          <Link to="/profile" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-secondary/80 transition-all group border border-transparent hover:border-border/50">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+              <User className="w-5 h-5 text-blue-500" />
+            </div>
+            <span className="font-medium text-lg text-foreground">حسابي</span>
+          </Link>
+        )}
+
+        {isAdmin && (
+          <Link to="/admin/orders" className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 group mt-4 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Package className="w-5 h-5 text-amber-700" />
+            </div>
+            <div>
+              <p className="font-bold text-amber-900">لوحة التحكم</p>
+              <p className="text-xs text-amber-700">إدارة المتجر</p>
+            </div>
+          </Link>
+        )}
+      </div>
+
+      {/* Logout */}
+      {user && (
+        <div className="px-2 mt-4 pb-4">
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center justify-center gap-2 p-4 rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-medium border border-red-100"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>تسجيل الخروج</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 
@@ -133,7 +160,7 @@ const Header = () => {
                   <Menu className="w-6 h-6 text-foreground" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <SheetContent side="right" className="w-[320px] sm:w-[400px] border-l-0 rounded-l-[2rem] bg-background/95 backdrop-blur-xl">
                 <SheetHeader className="text-right">
                   <SheetTitle>القائمة</SheetTitle>
                 </SheetHeader>
