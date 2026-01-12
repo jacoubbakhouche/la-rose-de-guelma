@@ -13,6 +13,7 @@ export interface Product {
   sizes?: string[];
   colors?: string[];
   is_new?: boolean;
+  created_at?: string;
 }
 
 export interface CartItem extends Product {

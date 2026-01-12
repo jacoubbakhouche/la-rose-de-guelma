@@ -10,6 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -19,7 +21,9 @@ import {
 } from "@/components/ui/sheet";
 import { toast } from 'sonner';
 
-const Header = () => {
+const Header = ({ onSearch }: { onSearch?: (term: string) => void }) => {
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
   const { cartCount } = useCart();
   const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -169,13 +173,15 @@ const Header = () => {
             </Sheet>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="p-2 rounded-full hover:bg-secondary transition-colors"
-          >
-            <Search className="w-5 h-5 text-muted-foreground" />
-          </motion.button>
+          <Link to="/search">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 rounded-full hover:bg-secondary transition-colors"
+            >
+              <Search className="w-5 h-5 text-muted-foreground" />
+            </motion.button>
+          </Link>
 
           <Link to="/cart">
             <motion.div

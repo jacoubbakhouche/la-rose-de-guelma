@@ -8,7 +8,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
 
-const ProductGrid = () => {
+interface ProductGridProps {
+  searchTerm?: string;
+}
+
+const ProductGrid = ({ searchTerm = '' }: ProductGridProps) => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +49,11 @@ const ProductGrid = () => {
   };
 
   const filteredProducts = products.filter(p => {
+    // Search Filter
+    if (searchTerm && !p.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+
     if (activeCategory === 'all') return true;
     if (activeCategory === 'new') {
       const isRecent = p.created_at

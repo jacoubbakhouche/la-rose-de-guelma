@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import Addresses from "./pages/Addresses";
 import Favorites from "./pages/Favorites";
 import MyOrders from "./pages/MyOrders";
+import Search from "./pages/Search";
 import AdminProducts from "./pages/AdminProducts";
 import AdminOrders from "./pages/AdminOrders";
 import AdminDesign from "./pages/AdminDesign";
@@ -36,7 +37,7 @@ const App = () => (
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/search" element={<Index />} />
+                <Route path="/search" element={<Search />} />
                 <Route path="/favorites" element={<Favorites />} />
                 <Route path="/orders" element={<MyOrders />} />
                 <Route path="/profile" element={<Profile />} />

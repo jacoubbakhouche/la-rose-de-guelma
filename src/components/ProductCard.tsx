@@ -58,7 +58,7 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
 
                 {/* "NOW" Text Inside */}
                 <span className="absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black text-white tracking-tighter">
-                  NOW
+                  NEW
                 </span>
               </div>
             )}
