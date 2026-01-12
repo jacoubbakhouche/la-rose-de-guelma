@@ -146,7 +146,66 @@ const AdminOrders = () => {
                 <span className="text-sm text-gray-500">{orders.length} طلب</span>
             </div>
 
-            <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+                {orders.map((order) => (
+                    <div key={order.id} className="bg-white p-4 rounded-xl border shadow-sm">
+                        <div className="flex justify-between items-start mb-4">
+                            <div>
+                                <span className="text-xs font-mono text-gray-500">#{order.id.slice(0, 8)}</span>
+                                <h3 className="font-bold text-gray-900">{order.full_name || 'غير معروف'}</h3>
+                            </div>
+                            <div className={`${getStatusColor(order.status || 'pending')} px-2 py-1 rounded-md text-xs font-bold`}>
+                                {getStatusLabel(order.status || 'pending')}
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 text-sm bg-secondary/20 p-3 rounded-lg mb-4">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">الهاتف:</span>
+                                <span dir="ltr">{order.phone}</span>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <span className="text-muted-foreground">العنوان:</span>
+                                <span className="leading-relaxed font-medium">{order.address}</span>
+                            </div>
+                        </div>
+
+                        <div className="mb-4">
+                            <h4 className="text-xs font-bold text-muted-foreground mb-2">المنتجات:</h4>
+                            {Array.isArray(order.items) && order.items.map((item: any, idx: number) => (
+                                <div key={idx} className="flex justify-between text-sm py-1 border-b border-dashed last:border-0 border-border/50">
+                                    <span>{item.name}</span>
+                                    <span className="font-mono">x{item.quantity}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-3 border-t">
+                            <div className="flex flex-col">
+                                <span className="text-xs text-muted-foreground">الإجمالي</span>
+                                <span className="font-bold text-primary text-lg">{order.total_amount.toLocaleString()} دج</span>
+                            </div>
+                            <Select
+                                defaultValue={order.status}
+                                onValueChange={(val) => updateStatus(order.id, val)}
+                            >
+                                <SelectTrigger className="w-[120px] h-9">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent dir="rtl">
+                                    <SelectItem value="pending">قيد الانتظار</SelectItem>
+                                    <SelectItem value="shipped">تم الشحن</SelectItem>
+                                    <SelectItem value="delivered">تم التوصيل</SelectItem>
+                                    <SelectItem value="cancelled">ملغى</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="hidden md:block rounded-xl border bg-white shadow-sm overflow-hidden">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-gray-50/50">
