@@ -78,7 +78,7 @@ const ProductGrid = ({ searchTerm = '' }: ProductGridProps) => {
   }
 
   return (
-    <section className="container px-4 py-8">
+    <section className="container px-4 pb-8 pt-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

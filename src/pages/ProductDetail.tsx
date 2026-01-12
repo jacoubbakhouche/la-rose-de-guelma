@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Heart, Star, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Heart, Star, ShoppingBag, X, Search } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,6 +36,8 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState<string | undefined>();
   const [selectedColor, setSelectedColor] = useState<string | undefined>();
   const [liked, setLiked] = useState(false);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [direction, setDirection] = useState(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -98,6 +100,15 @@ const ProductDetail = () => {
     allImages.unshift(product.image);
   }
 
+  const paginate = (newDirection: number) => {
+    setDirection(newDirection);
+    const currentIndex = allImages.indexOf(activeImage);
+    let nextIndex = currentIndex + newDirection;
+    if (nextIndex < 0) nextIndex = allImages.length - 1;
+    if (nextIndex >= allImages.length) nextIndex = 0;
+    setActiveImage(allImages[nextIndex]);
+  };
+
   const handleAddToCart = () => {
     if (product.sizes && !selectedSize) {
       toast({
@@ -159,7 +170,7 @@ const ProductDetail = () => {
 
       {/* Product Image & Gallery */}
       <div className="bg-gray-50 pb-6 rounded-b-[2rem] shadow-sm">
-        <Dialog>
+        <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
           <DialogTrigger asChild>
             <motion.div
               initial={{ opacity: 0 }}
@@ -174,18 +185,80 @@ const ProductDetail = () => {
                 alt={product.name}
                 className="w-full h-full object-cover object-top"
               />
-              <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs backdrop-blur-md">
-                اضغط للتكبير 🔍
+              <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs backdrop-blur-md flex items-center gap-1">
+                <span>اضغط للتكبير</span> <Search className="w-3 h-3" />
               </div>
             </motion.div>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl w-full h-[90vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
-            <div className="relative w-full h-full flex items-center justify-center p-4">
-              <img
-                src={activeImage}
-                alt={product.name}
-                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-              />
+          <DialogContent className="max-w-[100vw] w-screen h-screen p-0 bg-black/95 border-none shadow-none flex items-center justify-center outline-none">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsZoomOpen(false)}
+              className="absolute top-4 right-4 z-50 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+
+            {/* Image Container with Swipe */}
+            <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+              <AnimatePresence initial={false} custom={direction}>
+                <motion.img
+                  key={activeImage}
+                  custom={direction}
+                  variants={{
+                    enter: (direction: number) => ({
+                      x: direction > 0 ? 1000 : -1000,
+                      opacity: 0,
+                      scale: 0.8
+                    }),
+                    center: {
+                      zIndex: 1,
+                      x: 0,
+                      opacity: 1,
+                      scale: 1,
+                    },
+                    exit: (direction: number) => ({
+                      zIndex: 0,
+                      x: direction < 0 ? 1000 : -1000,
+                      opacity: 0,
+                      scale: 0.8
+                    })
+                  }}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{
+                    x: { type: "spring", stiffness: 300, damping: 30 },
+                    opacity: { duration: 0.2 }
+                  }}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={1}
+                  onDragEnd={(e, { offset, velocity }) => {
+                    const swipe = Math.abs(offset.x) * velocity.x;
+                    if (swipe < -10000 || offset.x < -100) {
+                      paginate(1);
+                    } else if (swipe > 10000 || offset.x > 100) {
+                      paginate(-1);
+                    }
+                  }}
+                  src={activeImage}
+                  alt={product.name}
+                  className="max-w-full max-h-full object-contain absolute"
+                />
+              </AnimatePresence>
+
+              {/* Navigation Indicators */}
+              {allImages.length > 1 && (
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-50">
+                  {allImages.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`w-2 h-2 rounded-full transition-colors ${allImages[idx] === activeImage ? 'bg-white' : 'bg-white/30'}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
