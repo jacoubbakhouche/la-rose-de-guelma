@@ -79,10 +79,10 @@ export const products: Product[] = [
 ];
 
 export const categories = [
-  { id: 'all', label: 'الكل', labelEn: 'All' },
-  { id: 'men', label: 'رجال', labelEn: 'Men' },
-  { id: 'women', label: 'نساء', labelEn: 'Women' },
-  { id: 'kids', label: 'أطفال', labelEn: 'Kids' },
-  { id: 'new', label: 'جديد', labelEn: 'New' },
-  { id: 'sale', label: 'تخفيضات', labelEn: 'Sale' },
+  { id: 'all', label: 'All', labelEn: 'All' },
+  { id: 'men', label: 'Men', labelEn: 'Men' },
+  { id: 'women', label: 'Women', labelEn: 'Women' },
+  { id: 'kids', label: 'Kids', labelEn: 'Kids' },
+  { id: 'new', label: 'New', labelEn: 'New' },
+  { id: 'sale', label: 'Sale', labelEn: 'Sale' },
 ];

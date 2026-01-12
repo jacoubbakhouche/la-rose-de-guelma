@@ -132,7 +132,7 @@ const ProductGrid = ({ searchTerm = '' }: ProductGridProps) => {
               </div>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
-                لا توجد منتجات في هذه الفئة
+                No products in this category
               </div>
             )}
 
@@ -144,7 +144,7 @@ const ProductGrid = ({ searchTerm = '' }: ProductGridProps) => {
                   onClick={() => setPage(prev => prev + 1)}
                   className="gap-2 rounded-full px-8"
                 >
-                  عرض المزيد <ChevronDown className="w-4 h-4" />
+                  Show More <ChevronDown className="w-4 h-4" />
                 </Button>
               </div>
             )}

@@ -96,23 +96,23 @@ const Search = () => {
     const showResults = searchTerm.length > 0 || activeCategory !== null;
 
     return (
-        <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+        <div className="min-h-screen bg-background flex flex-col" dir="ltr">
             {/* Search Header */}
             <div className="sticky top-0 z-50 bg-background border-b p-4 flex items-center gap-3">
                 <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
-                    <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
+                    <ArrowLeft className="w-5 h-5" />
                 </Button>
                 <div className="relative flex-1">
-                    <SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                         ref={inputRef}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="ابحث عن منتج..."
-                        className="pr-9 pl-9 bg-secondary border-none h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-primary"
+                        placeholder="Search for a product..."
+                        className="pl-9 pr-9 bg-secondary border-none h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-primary"
                     />
                     {searchTerm && (
-                        <button onClick={() => setSearchTerm('')} className="absolute left-3 top-1/2 -translate-y-1/2 p-1">
+                        <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1">
                             <X className="w-4 h-4 text-muted-foreground" />
                         </button>
                     )}
@@ -125,7 +125,7 @@ const Search = () => {
                     /* Categories Grid */
                     <div className="space-y-6 animate-in fade-in duration-500">
                         <div>
-                            <h2 className="text-lg font-bold mb-4">تصفح الفئات</h2>
+                            <h2 className="text-lg font-bold mb-4">Browse Categories</h2>
                             <div className="grid grid-cols-2 gap-3">
                                 {categories.filter(c => c.id !== 'all').map(category => (
                                     <button
@@ -144,11 +144,11 @@ const Search = () => {
                     <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-bold">
-                                {activeCategory ? categories.find(c => c.id === activeCategory)?.label : 'نتائج البحث'}
-                                <span className="text-sm font-normal text-muted-foreground mr-2">({filteredProducts.length})</span>
+                                {activeCategory ? categories.find(c => c.id === activeCategory)?.label : 'Search Results'}
+                                <span className="text-sm font-normal text-muted-foreground ml-2">({filteredProducts.length})</span>
                             </h2>
                             <Button variant="ghost" size="sm" onClick={() => { setActiveCategory(null); setSearchTerm(''); }} className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                                مسح الكل
+                                Clear All
                             </Button>
                         </div>
 
@@ -171,8 +171,8 @@ const Search = () => {
                                     transition={{ delay: 0.2 }}
                                     className="text-center space-y-2"
                                 >
-                                    <h3 className="text-xl font-bold text-foreground">لا توجد منتجات هنا!</h3>
-                                    <p className="text-sm">لم نتمكن من العثور على أي منتجات في هذه الفئة.</p>
+                                    <h3 className="text-xl font-bold text-foreground">No products found!</h3>
+                                    <p className="text-sm">We couldn't find any products in this category.</p>
                                 </motion.div>
                             </div>
                         )}

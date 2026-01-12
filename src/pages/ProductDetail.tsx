@@ -84,7 +84,7 @@ const ProductDetail = () => {
       </div>
     );
   }
-  if (!product) return <div className="min-h-screen flex text-center justify-center p-10"><p>المنتج غير موجود</p></div>;
+  if (!product) return <div className="min-h-screen flex text-center justify-center p-10"><p>Product not found</p></div>;
 
   const discountedPrice = product.discount
     ? product.price * (1 - product.discount / 100)
@@ -112,16 +112,16 @@ const ProductDetail = () => {
   const handleAddToCart = () => {
     if (product.sizes && !selectedSize) {
       toast({
-        title: 'اختر المقاس',
-        description: 'الرجاء اختيار المقاس قبل الإضافة للسلة',
+        title: 'Select Size',
+        description: 'Please select a size before adding to cart',
         variant: 'destructive',
       });
       return;
     }
     addToCart(product, selectedSize, selectedColor);
     toast({
-      title: 'تمت الإضافة',
-      description: `${product.name} أضيف إلى السلة`,
+      title: 'Added to Cart',
+      description: `${product.name} added to cart`,
     });
   };
 
@@ -186,7 +186,7 @@ const ProductDetail = () => {
                 className="w-full h-full object-cover object-top"
               />
               <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs backdrop-blur-md flex items-center gap-1">
-                <span>اضغط للتكبير</span> <Search className="w-3 h-3" />
+                <span>Click to Zoom</span> <Search className="w-3 h-3" />
               </div>
             </motion.div>
           </DialogTrigger>
@@ -291,11 +291,11 @@ const ProductDetail = () => {
           <h1 className="text-2xl font-bold text-foreground">{product.name}</h1>
           <div className="flex items-center gap-3">
             <span className="text-xl font-bold text-foreground">
-              {Math.round(discountedPrice).toLocaleString()} دج
+              {Math.round(discountedPrice).toLocaleString()} DZD
             </span>
             {product.discount && (
               <span className="text-muted-foreground line-through">
-                {product.price.toLocaleString()} دج
+                {product.price.toLocaleString()} DZD
               </span>
             )}
           </div>
@@ -317,7 +317,7 @@ const ProductDetail = () => {
             </div>
             <span className="font-medium text-foreground">{product.rating}</span>
             <span className="text-muted-foreground text-sm">
-              ({product.reviews} تقييم)
+              ({product.reviews} reviews)
             </span>
           </div>
         )}
@@ -325,7 +325,7 @@ const ProductDetail = () => {
         {/* Colors */}
         {product.colors && (
           <div className="space-y-3">
-            <span className="text-sm font-medium text-foreground">اللون</span>
+            <span className="text-sm font-medium text-foreground">Color</span>
             <div className="flex gap-3">
               {product.colors.map((color) => {
                 const isHex = color.startsWith('#');
@@ -352,7 +352,7 @@ const ProductDetail = () => {
         {/* Sizes */}
         {product.sizes && (
           <div className="space-y-3">
-            <span className="text-sm font-medium text-foreground">المقاس</span>
+            <span className="text-sm font-medium text-foreground">Size</span>
             <div className="flex flex-wrap gap-2">
               {product.sizes.map((size) => (
                 <motion.button
@@ -379,8 +379,18 @@ const ProductDetail = () => {
           className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 shadow-soft"
         >
           <ShoppingBag className="w-5 h-5" />
-          <span>أضف إلى السلة</span>
+          <span>Add to Cart</span>
         </motion.button>
+
+        {/* Description */}
+        {product.description && (
+          <div className="space-y-3 pt-6 border-t border-border/50">
+            <h3 className="text-lg font-bold text-foreground">Description</h3>
+            <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap text-base">
+              {product.description}
+            </p>
+          </div>
+        )}
       </motion.div>
     </div>
   );

@@ -70,12 +70,12 @@ const Cart = () => {
 
   const handleCheckout = async () => {
     if (!user) {
-      toast.error('يرجى تسجيل الدخول أولاً');
+      toast.error('Please sign in first');
       navigate('/auth');
       return;
     }
     if (!selectedAddress) {
-      toast.error('يرجى إضافة عنوان توصيل');
+      toast.error('Please add a delivery address');
       navigate('/addresses');
       return;
     }
@@ -91,19 +91,19 @@ const Cart = () => {
       status: 'pending' // Default status
     };
 
-    const toastId = toast.loading('جاري إرسال الطلب...');
+    const toastId = toast.loading('Sending order...');
 
     try {
       const { error } = await supabase.from('orders').insert(orderPayload);
 
       if (error) throw error;
 
-      toast.success('تم استلام طلبك بنجاح!', { id: toastId });
+      toast.success('Order received successfully!', { id: toastId });
       clearCart();
       navigate('/');
     } catch (error) {
       console.error('Error placing order:', error);
-      toast.error('فشل في إرسال الطلب. حاول مرة أخرى.', { id: toastId });
+      toast.error('Failed to send order. Please try again.', { id: toastId });
     }
   };
 
@@ -122,7 +122,7 @@ const Cart = () => {
                 <ArrowLeft className="w-5 h-5 text-foreground" />
               </motion.button>
             </Link>
-            <h1 className="text-xl font-bold text-foreground">السلة</h1>
+            <h1 className="text-xl font-bold text-foreground">Cart</h1>
           </div>
           <div className="flex items-center gap-2">
             {cartItems.length > 0 && (
@@ -133,7 +133,7 @@ const Cart = () => {
                 className="flex items-center gap-1 text-destructive text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-destructive/10 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
-                <span>مسح الكل</span>
+                <span>Clear All</span>
               </motion.button>
             )}
             <button className="p-2 rounded-full hover:bg-secondary transition-colors">
@@ -170,15 +170,15 @@ const Cart = () => {
             <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mb-4">
               <ShoppingBag className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h2 className="text-xl font-semibold text-foreground mb-2">سلتك فارغة</h2>
-            <p className="text-muted-foreground mb-6">ابدأ التسوق الآن وأضف منتجاتك المفضلة</p>
+            <h2 className="text-xl font-semibold text-foreground mb-2">Your Cart is Empty</h2>
+            <p className="text-muted-foreground mb-6">Start shopping and add your favorite items</p>
             <Link to="/">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="bg-primary text-primary-foreground px-6 py-3 rounded-2xl font-semibold"
               >
-                تسوق الآن
+                Shop Now
               </motion.button>
             </Link>
           </motion.div>
@@ -214,16 +214,16 @@ const Cart = () => {
                         <h3 className="font-semibold text-foreground">{item.name}</h3>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           {item.selectedColor && (
-                            <span>اللون: {item.selectedColor}</span>
+                            <span>Color: {item.selectedColor}</span>
                           )}
                           {item.selectedSize && (
-                            <span>المقاس: {item.selectedSize}</span>
+                            <span>Size: {item.selectedSize}</span>
                           )}
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-foreground">
-                          {Math.round(itemPrice).toLocaleString()} دج
+                          {Math.round(itemPrice).toLocaleString()} DZD
                         </span>
 
                         {/* Quantity Controls */}
@@ -287,7 +287,7 @@ const Cart = () => {
                         <p className="text-xs text-muted-foreground truncate">{selectedAddress.wilaya}, {selectedAddress.commune}</p>
                       </>
                     ) : (
-                      <p className="font-medium text-sm text-foreground">إضافة عنوان توصيل</p>
+                      <p className="font-medium text-sm text-foreground">Add Delivery Address</p>
                     )}
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -304,8 +304,8 @@ const Cart = () => {
                       : 'border-border bg-card text-muted-foreground'
                       }`}
                   >
-                    <span className="text-xs font-bold">توصيل للمنزل</span>
-                    <span className="text-[10px]">{getShippingPrice(selectedAddress.wilaya, 'home')} دج</span>
+                    <span className="text-xs font-bold">Home Delivery</span>
+                    <span className="text-[10px]">{getShippingPrice(selectedAddress.wilaya, 'home')} DZD</span>
                   </button>
                   <button
                     onClick={() => setDeliveryType('desk')}
@@ -314,33 +314,33 @@ const Cart = () => {
                       : 'border-border bg-card text-muted-foreground'
                       }`}
                   >
-                    <span className="text-xs font-bold">استلام من المكتب</span>
-                    <span className="text-[10px]">{getShippingPrice(selectedAddress.wilaya, 'desk')} دج</span>
+                    <span className="text-xs font-bold">Office Pickup</span>
+                    <span className="text-[10px]">{getShippingPrice(selectedAddress.wilaya, 'desk')} DZD</span>
                   </button>
                 </div>
               )}
             </div>
           ) : (
             <Link to="/auth" className="block text-center text-sm text-primary underline mb-2">
-              سجل الدخول لإتمام الطلب
+              Sign in to complete order
             </Link>
           )}
 
           <div className="space-y-1 py-2 border-t border-dashed border-border">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">المشتريات:</span>
-              <span className="font-medium">{Math.round(cartTotal).toLocaleString()} دج</span>
+              <span className="text-muted-foreground">Subtotal:</span>
+              <span className="font-medium">{Math.round(cartTotal).toLocaleString()} DZD</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">التوصيل:</span>
-              <span className="font-medium text-primary">{shippingPrice.toLocaleString()} دج</span>
+              <span className="text-muted-foreground">Shipping:</span>
+              <span className="font-medium text-primary">{shippingPrice.toLocaleString()} DZD</span>
             </div>
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-border">
-            <span className="text-muted-foreground font-bold">الإجمالي:</span>
+            <span className="text-muted-foreground font-bold">Total:</span>
             <span className="text-2xl font-bold text-foreground">
-              {Math.round(finalTotal).toLocaleString()} دج
+              {Math.round(finalTotal).toLocaleString()} DZD
             </span>
           </div>
 
@@ -350,7 +350,7 @@ const Cart = () => {
             onClick={handleCheckout}
             className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-semibold shadow-soft text-lg"
           >
-            تأكيد الطلب
+            Confirm Order
           </motion.button>
         </motion.div>
       )}

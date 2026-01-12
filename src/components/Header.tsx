@@ -30,7 +30,7 @@ const Header = ({ onSearch }: { onSearch?: (term: string) => void }) => {
 
   const handleSignOut = async () => {
     await signOut();
-    toast.success('تم تسجيل الخروج بنجاح');
+    toast.success('Signed out successfully');
     navigate('/');
   };
 
@@ -48,7 +48,7 @@ const Header = ({ onSearch }: { onSearch?: (term: string) => void }) => {
               <div className="flex-1 overflow-hidden">
                 <p className="font-bold text-lg truncate">{user.email?.split('@')[0]}</p>
                 <Link to="/profile" className="text-xs text-white/80 hover:text-white flex items-center gap-1 mt-1 transition-colors">
-                  <span>عرض الملف</span>
+                  <span>View Profile</span>
                   <ChevronLeft className="w-3 h-3" />
                 </Link>
               </div>
@@ -62,8 +62,8 @@ const Header = ({ onSearch }: { onSearch?: (term: string) => void }) => {
                   <User className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="font-bold">زائر</p>
-                  <p className="text-xs text-gray-300">سجل الدخول للمزيد</p>
+                  <p className="font-bold">Guest</p>
+                  <p className="text-xs text-gray-300">Sign in for more</p>
                 </div>
               </div>
             </div>
@@ -77,20 +77,20 @@ const Header = ({ onSearch }: { onSearch?: (term: string) => void }) => {
           <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
             <Home className="w-5 h-5 text-primary" />
           </div>
-          <span className="font-medium text-lg text-foreground">الرئيسية</span>
+          <span className="font-medium text-lg text-foreground">Home</span>
         </Link>
 
         <Link to="/orders" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-secondary/80 transition-all group border border-transparent hover:border-border/50">
           <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
             <Package className="w-5 h-5 text-indigo-500" />
           </div>
-          <span className="font-medium text-lg text-foreground">طلباتي</span>
+          <span className="font-medium text-lg text-foreground">My Orders</span>
         </Link>
         <Link to="/favorites" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-secondary/80 transition-all group border border-transparent hover:border-border/50">
           <div className="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center group-hover:bg-pink-100 transition-colors">
             <Heart className="w-5 h-5 text-pink-500" />
           </div>
-          <span className="font-medium text-lg text-foreground">المفضلة</span>
+          <span className="font-medium text-lg text-foreground">Favorites</span>
         </Link>
 
         {user && (
@@ -98,7 +98,7 @@ const Header = ({ onSearch }: { onSearch?: (term: string) => void }) => {
             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
               <User className="w-5 h-5 text-blue-500" />
             </div>
-            <span className="font-medium text-lg text-foreground">حسابي</span>
+            <span className="font-medium text-lg text-foreground">Profile</span>
           </Link>
         )}
 
@@ -108,8 +108,8 @@ const Header = ({ onSearch }: { onSearch?: (term: string) => void }) => {
               <Package className="w-5 h-5 text-amber-700" />
             </div>
             <div>
-              <p className="font-bold text-amber-900">لوحة التحكم</p>
-              <p className="text-xs text-amber-700">إدارة المتجر</p>
+              <p className="font-bold text-amber-900">Dashboard</p>
+              <p className="text-xs text-amber-700">Manage Store</p>
             </div>
           </Link>
         )}
@@ -123,7 +123,7 @@ const Header = ({ onSearch }: { onSearch?: (term: string) => void }) => {
             className="w-full flex items-center justify-center gap-2 p-4 rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors font-medium border border-red-100"
           >
             <LogOut className="w-5 h-5" />
-            <span>تسجيل الخروج</span>
+            <span>Sign Out</span>
           </button>
         </div>
       )}
@@ -166,12 +166,13 @@ const Header = ({ onSearch }: { onSearch?: (term: string) => void }) => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[320px] sm:w-[400px] border-l-0 rounded-l-[2rem] bg-background/95 backdrop-blur-xl">
                 <SheetHeader className="text-right">
-                  <SheetTitle>القائمة</SheetTitle>
+                  <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
                 <SidebarContent />
               </SheetContent>
             </Sheet>
           </div>
+
 
           <Link to="/search">
             <motion.button
@@ -219,7 +220,7 @@ const Header = ({ onSearch }: { onSearch?: (term: string) => void }) => {
                   {isAdmin && (
                     <DropdownMenuItem asChild>
                       <Link to="/admin/orders" className="flex items-center gap-2 w-full text-purple-600 font-bold flex-row-reverse justify-between">
-                        <span>لوحة المشرف</span>
+                        <span>Admin Panel</span>
                         <Package className="w-4 h-4" />
                       </Link>
                     </DropdownMenuItem>
@@ -229,14 +230,14 @@ const Header = ({ onSearch }: { onSearch?: (term: string) => void }) => {
                     className="text-right flex-row-reverse gap-2 text-destructive focus:text-destructive"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>تسجيل الخروج</span>
+                    <span>Sign Out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <Link to="/auth">
                 <Button variant="default" size="sm" className="text-sm">
-                  تسجيل الدخول
+                  Sign In
                 </Button>
               </Link>
             )}
