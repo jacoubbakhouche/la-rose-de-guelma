@@ -127,14 +127,29 @@ const Search = () => {
                         <div>
                             <h2 className="text-lg font-bold mb-4">Browse Categories</h2>
                             <div className="grid grid-cols-2 gap-3">
-                                {categories.filter(c => c.id !== 'all').map(category => (
-                                    <button
+                                {categories.filter(c => c.id !== 'all').map((category, index) => (
+                                    <motion.button
                                         key={category.id}
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: index * 0.05 }}
                                         onClick={() => setActiveCategory(category.id)}
-                                        className="aspect-[2/1] rounded-2xl flex items-center justify-center text-lg font-bold transition-all hover:scale-[1.02] active:scale-95 bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground shadow-sm"
+                                        className={`relative h-28 rounded-2xl overflow-hidden transition-all hover:scale-[1.02] active:scale-95 ${category.color || 'bg-secondary'}`}
                                     >
-                                        {category.label}
-                                    </button>
+                                        <div className="absolute inset-0 p-4 flex flex-col justify-between z-10">
+                                            <span className="font-bold text-lg text-gray-900 text-left">
+                                                {category.label}
+                                            </span>
+                                        </div>
+
+                                        {category.image && (
+                                            <img
+                                                src={category.image}
+                                                alt={category.label}
+                                                className="absolute right-[-10px] bottom-[-10px] w-24 h-24 object-contain rotate-[-12deg] transition-transform duration-300 group-hover:rotate-0"
+                                            />
+                                        )}
+                                    </motion.button>
                                 ))}
                             </div>
                         </div>

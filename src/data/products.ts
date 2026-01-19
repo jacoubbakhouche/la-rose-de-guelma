@@ -79,10 +79,46 @@ export const products: Product[] = [
 ];
 
 export const categories = [
-  { id: 'all', label: 'All', labelEn: 'All' },
-  { id: 'men', label: 'Men', labelEn: 'Men' },
-  { id: 'women', label: 'Women', labelEn: 'Women' },
-  { id: 'kids', label: 'Kids', labelEn: 'Kids' },
-  { id: 'new', label: 'New', labelEn: 'New' },
-  { id: 'sale', label: 'Sale', labelEn: 'Sale' },
+  {
+    id: 'men',
+    label: 'Men',
+    labelEn: 'Men',
+    image: sneakersPurple,
+    color: 'bg-[#E5DEFF]' // Light purple/blue
+  },
+  {
+    id: 'women',
+    label: 'Women',
+    labelEn: 'Women',
+    image: pufferJacket,
+    color: 'bg-[#FFE2E2]' // Light pink
+  },
+  {
+    id: 'kids',
+    label: 'Kids',
+    labelEn: 'Kids',
+    image: hoodieBeige,
+    color: 'bg-[#FFF4DE]' // Light yellow
+  },
+  {
+    id: 'new',
+    label: 'New',
+    labelEn: 'New',
+    image: sneakersWhite,
+    color: 'bg-[#F2FCE2]' // Light green
+  },
+  {
+    id: 'sale',
+    label: 'Sale',
+    labelEn: 'Sale',
+    image: cargoPants,
+    color: 'bg-[#FFDEE2]' // Light red
+  },
+  {
+    id: 'all',
+    label: 'All',
+    labelEn: 'All',
+    image: sneakersGold,
+    color: 'bg-gray-100'
+  },
 ];

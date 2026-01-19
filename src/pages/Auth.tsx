@@ -149,7 +149,7 @@ export default function Auth() {
         >
           {/* Logo */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-primary mb-2">Larose de Guelma</h1>
+            <h1 className="text-3xl font-bold text-primary mb-2 tracking-tight">ESSENZA</h1>
             <p className="text-muted-foreground">
               {isLogin ? 'مرحباً بعودتك!' : 'أنشئ حسابك الآن'}
             </p>
